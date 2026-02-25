@@ -484,23 +484,17 @@ function goToday() {
   state.month = t.getMonth();
   state.selectedDate = t.getDate();
   render();
-  setTimeout(function() {
-    var el = document.getElementById("taskInput");
-    if (el) el.focus();
-  }, 50);
 }
 
 function selectDate(d) {
   state.selectedDate = d;
   render();
-  setTimeout(function() {
-    var el = document.getElementById("taskInput");
-    if (el) el.focus();
-    if (window.innerWidth <= 700) {
+  if (window.innerWidth <= 700) {
+    setTimeout(function() {
       var panel = document.querySelector(".task-panel");
       if (panel) panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, 60);
+    }, 60);
+  }
 }
 
 function addTask() {
