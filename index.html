@@ -3,124 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0c1017">
+<meta name="theme-color" content="#5B7FFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Task Calendar</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --bg: #0c1017;
-    --surface: #151b27;
-    --surface2: #1c2435;
-    --border: #252e3f;
-    --text: #d8dee9;
-    --text-dim: #5a6580;
-    --accent: #5b9cf6;
-    --accent-glow: rgba(91,156,246,0.15);
-    --green: #4ade80;
-    --yellow: #fbbf24;
-    --red: #f87171;
-    --radius: 12px;
+    --bg: #F2EEFF;
+    --surface: #FFFFFF;
+    --border: #E4DAFF;
+    --text: #1D1640;
+    --text-dim: #9389C0;
+    --orange: #FF6B35;
+    --blue: #5B7FFF;
+    --pink: #FF5FA0;
+    --yellow: #FFD166;
+    --teal: #06D6A0;
+    --coral: #FF6B6B;
+    --purple: #8B5FCF;
+    --radius: 16px;
   }
 
   html, body {
     height: 100%;
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', -apple-system, sans-serif;
+    font-family: 'Nunito', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 
   .app {
-    max-width: 960px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 24px 20px 40px;
+    padding: 14px 14px 28px;
   }
 
+  /* ── HEADER ────────────────────────────────────── */
   .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 28px;
+    margin-bottom: 14px;
+    background: linear-gradient(130deg, #5B7FFF 0%, #8B5FCF 52%, #FF5FA0 100%);
+    border-radius: 20px;
+    padding: 13px 16px;
+    box-shadow: 0 6px 24px rgba(91,127,255,0.28);
   }
 
   .header h1 {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: #f0f4f8;
+    font-size: 22px;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: -0.3px;
+    line-height: 1.15;
   }
 
   .header h1 span {
-    font-weight: 400;
-    color: var(--text-dim);
-    margin-left: 6px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.68);
+    margin-left: 5px;
+    font-size: 18px;
   }
 
   .nav-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    border: none;
+    background: rgba(255,255,255,0.22);
+    color: #FFFFFF;
+    font-size: 13px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s;
+    transition: all 0.14s;
+    flex-shrink: 0;
   }
-  .nav-btn:hover { background: var(--surface2); border-color: var(--accent); }
-  .nav-btn:active { transform: scale(0.95); }
+  .nav-btn:hover { background: rgba(255,255,255,0.38); }
+  .nav-btn:active { transform: scale(0.88); }
 
   .today-btn {
-    background: none;
+    background: rgba(255,255,255,0.24);
     border: none;
-    color: var(--accent);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
+    color: #FFFFFF;
+    font-family: 'Nunito', sans-serif;
+    font-size: 10px;
+    font-weight: 900;
     cursor: pointer;
-    padding: 4px 0;
-    letter-spacing: 0.5px;
+    padding: 3px 9px;
+    letter-spacing: 0.9px;
     text-transform: uppercase;
+    border-radius: 20px;
+    margin-top: 3px;
+    transition: background 0.14s;
+    display: block;
+    white-space: nowrap;
   }
-  .today-btn:hover { text-decoration: underline; }
+  .today-btn:hover { background: rgba(255,255,255,0.4); }
 
   .header-center { text-align: center; }
 
+  /* ── LAYOUT ────────────────────────────────────── */
   .layout {
     display: flex;
-    gap: 24px;
+    gap: 12px;
+    align-items: flex-start;
   }
 
-  .cal-side { flex: 1 1 420px; min-width: 0; }
-  .task-side { flex: 1 1 300px; min-width: 280px; }
+  .cal-side { flex: 1 1 0; min-width: 0; }
+  .task-side { flex: 0 0 272px; }
 
+  /* ── DAY LABELS ────────────────────────────────── */
   .day-labels {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 4px;
-    margin-bottom: 4px;
-  }
-  .day-label {
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-dim);
-    padding: 8px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-bottom: 5px;
   }
 
+  .day-label {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 900;
+    color: var(--text-dim);
+    padding: 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  /* ── CALENDAR GRID ─────────────────────────────── */
   .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -129,151 +149,223 @@
 
   .cal-cell {
     aspect-ratio: 1;
-    border-radius: 10px;
-    border: 1px solid transparent;
+    border-radius: 11px;
+    border: 2px solid transparent;
     background: var(--surface);
     color: var(--text);
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 800;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    transition: all 0.12s;
+    gap: 2px;
+    transition: all 0.13s;
     position: relative;
-    font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 1px 3px rgba(91,127,255,0.07);
   }
-  .cal-cell:hover { background: var(--surface2); border-color: var(--border); }
+  .cal-cell:hover {
+    border-color: var(--blue);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(91,127,255,0.18);
+  }
   .cal-cell.today {
-    color: var(--accent);
-    font-weight: 700;
-    background: var(--accent-glow);
-    border-color: rgba(91,156,246,0.25);
+    background: var(--orange);
+    color: #FFFFFF;
+    border-color: transparent;
+    box-shadow: 0 3px 14px rgba(255,107,53,0.42);
   }
   .cal-cell.selected {
-    border-color: var(--accent);
-    background: rgba(91,156,246,0.12);
-    box-shadow: 0 0 0 1px var(--accent);
+    background: var(--blue);
+    color: #FFFFFF;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(91,127,255,0.45);
+    transform: translateY(-2px);
+  }
+  .cal-cell.today.selected {
+    background: #E55A20;
+    box-shadow: 0 4px 16px rgba(229,90,32,0.45);
   }
   .cal-cell.empty {
     background: transparent;
     cursor: default;
+    box-shadow: none;
   }
+  .cal-cell.empty:hover { transform: none; border-color: transparent; box-shadow: none; }
 
-  .dot-row { display: flex; gap: 3px; height: 7px; }
+  .dot-row { display: flex; gap: 2px; height: 5px; }
   .dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
   }
+  .cal-cell.selected .dot,
+  .cal-cell.today .dot { filter: brightness(2) saturate(0.5); }
 
+  /* ── TASK PANEL ────────────────────────────────── */
   .task-panel {
     background: var(--surface);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    padding: 24px;
+    border-radius: 20px;
+    padding: 13px 13px 11px;
     position: sticky;
-    top: 24px;
+    top: 14px;
+    border: 2px solid var(--border);
+    box-shadow: 0 4px 20px rgba(91,127,255,0.1);
   }
 
+  .task-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .task-panel-head-left { min-width: 0; }
+
   .task-panel h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #f0f4f8;
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--text);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .task-date-sub {
-    font-size: 13px;
+    font-size: 10px;
     color: var(--text-dim);
-    margin-bottom: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 1px;
   }
+
+  .task-count-badge {
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 900;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .task-count-badge.all-done { background: var(--teal); color: white; }
+  .task-count-badge.some-done { background: var(--yellow); color: var(--text); }
+  .task-count-badge.none-done { background: var(--coral); color: white; }
+  .task-count-badge.zero { background: var(--border); color: var(--text-dim); }
 
   .task-input-row {
     display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 6px;
+    margin-bottom: 9px;
   }
 
   .task-input {
     flex: 1;
-    padding: 11px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
+    padding: 9px 11px;
+    border-radius: 11px;
+    border: 2px solid var(--border);
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
     outline: none;
-    transition: border-color 0.15s;
+    transition: border-color 0.14s;
+    min-width: 0;
   }
-  .task-input:focus { border-color: var(--accent); }
-  .task-input::placeholder { color: var(--text-dim); }
+  .task-input:focus { border-color: var(--blue); }
+  .task-input::placeholder { color: var(--text-dim); font-weight: 600; }
 
   .add-btn {
-    padding: 11px 18px;
-    border-radius: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
     border: none;
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--orange) 0%, var(--pink) 100%);
     color: #fff;
-    font-weight: 700;
-    font-size: 16px;
+    font-weight: 900;
+    font-size: 22px;
     cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
     transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(255,107,53,0.38);
+    line-height: 1;
   }
-  .add-btn:hover { filter: brightness(1.1); }
-  .add-btn:active { transform: scale(0.95); }
+  .add-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .add-btn:active { transform: scale(0.88); }
 
-  .task-list { display: flex; flex-direction: column; gap: 8px; }
+  /* ── TASK LIST ─────────────────────────────────── */
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
 
   .task-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 11px 12px;
+    gap: 8px;
+    padding: 8px 9px;
     background: var(--bg);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    animation: fadeIn 0.2s ease;
+    border-radius: 11px;
+    border: 2px solid transparent;
+    border-left: 3px solid var(--blue);
+    animation: fadeIn 0.17s ease;
+    transition: border-color 0.13s, border-left-color 0.13s;
   }
+  .task-item.task-done-item {
+    border-left-color: var(--teal);
+    opacity: 0.8;
+  }
+  .task-item:hover { border-color: var(--border); border-left-color: var(--blue); }
+  .task-item.task-done-item:hover { border-left-color: var(--teal); }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
+    from { opacity: 0; transform: translateY(-3px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
   .check-btn {
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    border: 2px solid var(--text-dim);
+    width: 21px;
+    height: 21px;
+    border-radius: 7px;
+    border: 2.5px solid var(--border);
     background: transparent;
     cursor: pointer;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 10px;
     color: #fff;
-    transition: all 0.15s;
+    font-weight: 900;
+    transition: all 0.14s;
   }
+  .check-btn:hover { border-color: var(--teal); }
   .check-btn.done {
     border: none;
-    background: var(--green);
+    background: var(--teal);
+    box-shadow: 0 2px 6px rgba(6,214,160,0.38);
   }
 
   .task-text {
     flex: 1;
-    font-size: 14px;
-    line-height: 1.4;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
     word-break: break-word;
   }
   .task-text.done {
     text-decoration: line-through;
     color: var(--text-dim);
+    font-weight: 600;
   }
 
   .del-btn {
@@ -281,48 +373,53 @@
     border: none;
     color: var(--text-dim);
     cursor: pointer;
-    font-size: 18px;
-    padding: 0 4px;
+    font-size: 15px;
+    padding: 0 2px;
     line-height: 1;
     opacity: 0;
-    transition: opacity 0.15s, color 0.15s;
+    transition: opacity 0.14s, color 0.14s;
+    font-weight: 900;
+    flex-shrink: 0;
   }
   .task-item:hover .del-btn { opacity: 1; }
-  .del-btn:hover { color: var(--red); }
+  .del-btn:hover { color: var(--coral); }
 
+  /* ── EMPTY / PLACEHOLDER ───────────────────────── */
   .empty-state {
     text-align: center;
-    padding: 32px 0;
+    padding: 14px 0;
     color: var(--text-dim);
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: 700;
   }
-  .empty-state .icon { font-size: 28px; margin-bottom: 8px; }
+  .empty-state .icon { font-size: 22px; margin-bottom: 4px; }
 
   .placeholder-panel {
     background: var(--surface);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    padding: 48px 24px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    padding: 36px 20px;
     text-align: center;
     color: var(--text-dim);
+    box-shadow: 0 4px 20px rgba(91,127,255,0.08);
   }
-  .placeholder-panel .icon { font-size: 36px; margin-bottom: 12px; }
-  .placeholder-panel p { font-size: 14px; }
+  .placeholder-panel .icon { font-size: 34px; margin-bottom: 10px; }
+  .placeholder-panel p { font-size: 13px; font-weight: 800; line-height: 1.5; color: var(--text); }
+  .placeholder-panel .sub { font-size: 11px; font-weight: 600; margin-top: 4px; color: var(--text-dim); }
 
-  .task-count {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 12px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
+  /* ── MOBILE ────────────────────────────────────── */
   @media (max-width: 700px) {
-    .layout { flex-direction: column; }
-    .task-side { min-width: 0; }
+    .layout { flex-direction: column; gap: 10px; }
+    .task-side { width: 100%; flex: none; }
     .task-panel { position: static; }
-    .app { padding: 16px 12px 32px; }
-    .header h1 { font-size: 20px; }
-    .cal-cell { font-size: 13px; border-radius: 8px; }
+    .app { padding: 10px 10px 22px; }
+    .header { padding: 11px 13px; border-radius: 16px; margin-bottom: 11px; }
+    .header h1 { font-size: 18px; }
+    .header h1 span { font-size: 15px; }
+    .nav-btn { width: 34px; height: 34px; font-size: 12px; }
+    .cal-cell { font-size: 12px; border-radius: 9px; }
+    .day-label { font-size: 9px; padding: 3px 0; }
+    .cal-grid { gap: 3px; }
     .del-btn { opacity: 1; }
   }
 </style>
@@ -332,7 +429,6 @@
 <div class="app" id="app"></div>
 
 <script>
-// Register service worker for PWA install
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(function(){});
 }
@@ -388,13 +484,23 @@ function goToday() {
   state.month = t.getMonth();
   state.selectedDate = t.getDate();
   render();
-  setTimeout(function() { var el = document.getElementById("taskInput"); if(el) el.focus(); }, 50);
+  setTimeout(function() {
+    var el = document.getElementById("taskInput");
+    if (el) el.focus();
+  }, 50);
 }
 
 function selectDate(d) {
   state.selectedDate = d;
   render();
-  setTimeout(function() { var el = document.getElementById("taskInput"); if(el) el.focus(); }, 50);
+  setTimeout(function() {
+    var el = document.getElementById("taskInput");
+    if (el) el.focus();
+    if (window.innerWidth <= 700) {
+      var panel = document.querySelector(".task-panel");
+      if (panel) panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, 60);
 }
 
 function addTask() {
@@ -407,7 +513,16 @@ function addTask() {
   saveTasks();
   input.value = "";
   render();
-  setTimeout(function() { var el = document.getElementById("taskInput"); if(el) el.focus(); }, 50);
+  setTimeout(function() {
+    var el = document.getElementById("taskInput");
+    if (el) el.focus();
+    if (window.innerWidth <= 700) {
+      var list = document.querySelector(".task-list");
+      if (list && list.lastElementChild) {
+        list.lastElementChild.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+  }, 60);
 }
 
 function toggleTask(key, id) {
@@ -442,6 +557,7 @@ function render() {
   var selKey = state.selectedDate ? dateKey(state.year, state.month, state.selectedDate) : null;
   var selTasks = selKey ? (state.tasks[selKey] || []) : [];
 
+  /* ── calendar cells ── */
   var calCells = "";
   for (var i = 0; i < firstDay; i++) calCells += '<div class="cal-cell empty"></div>';
 
@@ -454,9 +570,9 @@ function render() {
 
     var dotColor = "";
     if (count > 0) {
-      if (doneCount === count) dotColor = "var(--green)";
+      if (doneCount === count) dotColor = "var(--teal)";
       else if (doneCount > 0) dotColor = "var(--yellow)";
-      else dotColor = "var(--red)";
+      else dotColor = "var(--coral)";
     }
 
     var cls = "cal-cell";
@@ -469,47 +585,70 @@ function render() {
       '</div>';
   }
 
+  /* ── task panel ── */
   var taskPanel = "";
   if (state.selectedDate) {
     var dayName = DAYS_FULL[new Date(state.year, state.month, state.selectedDate).getDay()];
-    var todayBadge = isToday(state.selectedDate) ? " &middot; today" : "";
+    var todayLabel = isToday(state.selectedDate) ? " \u00b7 Today" : "";
+
     var doneCount2 = 0;
     for (var k = 0; k < selTasks.length; k++) { if (selTasks[k].done) doneCount2++; }
-    var countLabel = selTasks.length > 0 ? doneCount2 + "/" + selTasks.length + " done" : "";
+
+    var badgeClass = "task-count-badge zero";
+    var badgeText = "0 tasks";
+    if (selTasks.length > 0) {
+      badgeText = doneCount2 + "/" + selTasks.length;
+      if (doneCount2 === selTasks.length) badgeClass = "task-count-badge all-done";
+      else if (doneCount2 > 0) badgeClass = "task-count-badge some-done";
+      else badgeClass = "task-count-badge none-done";
+    }
 
     var taskItems = "";
     if (selTasks.length === 0) {
-      taskItems = '<div class="empty-state"><div class="icon">✏️</div>No tasks yet — add one above</div>';
+      taskItems = '<div class="empty-state"><div class="icon">✏️</div>No tasks yet — add one!</div>';
     } else {
       taskItems = '<div class="task-list">';
       for (var m = 0; m < selTasks.length; m++) {
         var t = selTasks[m];
-        taskItems += '<div class="task-item">' +
-          '<button class="check-btn ' + (t.done ? 'done' : '') + '" onclick="toggleTask(\'' + selKey + '\',' + t.id + ')">' + (t.done ? '✓' : '') + '</button>' +
-          '<span class="task-text ' + (t.done ? 'done' : '') + '">' + escHtml(t.text) + '</span>' +
-          '<button class="del-btn" onclick="deleteTask(\'' + selKey + '\',' + t.id + ')">×</button>' +
+        var itemCls = "task-item" + (t.done ? " task-done-item" : "");
+        taskItems +=
+          '<div class="' + itemCls + '">' +
+            '<button class="check-btn ' + (t.done ? 'done' : '') + '" onclick="toggleTask(\'' + selKey + '\',' + t.id + ')">' +
+              (t.done ? '&#10003;' : '') +
+            '</button>' +
+            '<span class="task-text ' + (t.done ? 'done' : '') + '">' + escHtml(t.text) + '</span>' +
+            '<button class="del-btn" onclick="deleteTask(\'' + selKey + '\',' + t.id + ')">&#215;</button>' +
           '</div>';
       }
       taskItems += '</div>';
     }
 
-    taskPanel = '<div class="task-panel">' +
-      '<h2>' + MONTHS[state.month] + ' ' + state.selectedDate + '</h2>' +
-      '<div class="task-date-sub">' + dayName + todayBadge + '</div>' +
-      '<div class="task-input-row">' +
-        '<input id="taskInput" class="task-input" placeholder="Add a task..." onkeydown="if(event.key===\'Enter\')addTask()">' +
-        '<button class="add-btn" onclick="addTask()">+</button>' +
-      '</div>' +
-      (countLabel ? '<div class="task-count">' + countLabel + '</div>' : '') +
-      taskItems +
+    taskPanel =
+      '<div class="task-panel">' +
+        '<div class="task-panel-head">' +
+          '<div class="task-panel-head-left">' +
+            '<h2>' + MONTHS[state.month] + ' ' + state.selectedDate + todayLabel + '</h2>' +
+            '<div class="task-date-sub">' + dayName + '</div>' +
+          '</div>' +
+          '<span class="' + badgeClass + '">' + badgeText + '</span>' +
+        '</div>' +
+        '<div class="task-input-row">' +
+          '<input id="taskInput" class="task-input" placeholder="Add a task..." ' +
+            'onkeydown="if(event.key===\'Enter\')addTask()">' +
+          '<button class="add-btn" onclick="addTask()">+</button>' +
+        '</div>' +
+        taskItems +
       '</div>';
   } else {
-    taskPanel = '<div class="placeholder-panel">' +
-      '<div class="icon">📅</div>' +
-      '<p>Click a day to view & add tasks</p>' +
+    taskPanel =
+      '<div class="placeholder-panel">' +
+        '<div class="icon">&#128197;</div>' +
+        '<p>Pick a day to manage tasks</p>' +
+        '<div class="sub">Tap any date on the calendar</div>' +
       '</div>';
   }
 
+  /* ── day labels ── */
   var dayLabels = "";
   for (var n = 0; n < DAYS_SHORT.length; n++) {
     dayLabels += '<div class="day-label">' + DAYS_SHORT[n] + '</div>';
@@ -517,12 +656,12 @@ function render() {
 
   app.innerHTML =
     '<div class="header">' +
-      '<button class="nav-btn" onclick="prevMonth()">◀</button>' +
+      '<button class="nav-btn" onclick="prevMonth()">&#9664;</button>' +
       '<div class="header-center">' +
         '<h1>' + MONTHS[state.month] + '<span>' + state.year + '</span></h1>' +
         '<button class="today-btn" onclick="goToday()">Today</button>' +
       '</div>' +
-      '<button class="nav-btn" onclick="nextMonth()">▶</button>' +
+      '<button class="nav-btn" onclick="nextMonth()">&#9654;</button>' +
     '</div>' +
     '<div class="layout">' +
       '<div class="cal-side">' +
@@ -533,8 +672,15 @@ function render() {
     '</div>';
 }
 
+// Auto-select today on startup
 loadTasks();
-render();
+(function() {
+  var t = new Date();
+  state.year = t.getFullYear();
+  state.month = t.getMonth();
+  state.selectedDate = t.getDate();
+  render();
+})();
 </script>
 </body>
 </html>

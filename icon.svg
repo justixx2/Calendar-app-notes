@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5B7FFF"/>
+      <stop offset="50%" stop-color="#8B5FCF"/>
+      <stop offset="100%" stop-color="#FF5FA0"/>
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4268FF"/>
+      <stop offset="100%" stop-color="#7C5CBF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+
+  <!-- Calendar body (white card) -->
+  <rect x="72" y="148" width="368" height="300" rx="30" fill="white" opacity="0.97"/>
+
+  <!-- Header bar inside calendar -->
+  <rect x="72" y="148" width="368" height="90" rx="30" fill="url(#headerGrad)"/>
+  <rect x="72" y="208" width="368" height="30" fill="url(#headerGrad)"/>
+
+  <!-- Calendar ring binders -->
+  <rect x="162" y="104" width="26" height="80" rx="13" fill="#1D1640"/>
+  <rect x="324" y="104" width="26" height="80" rx="13" fill="#1D1640"/>
+  <rect x="168" y="108" width="14" height="72" rx="7" fill="#FF6B35" opacity="0.6"/>
+  <rect x="330" y="108" width="14" height="72" rx="7" fill="#FF5FA0" opacity="0.6"/>
+
+  <!-- White text lines in header (simulating month text) -->
+  <rect x="160" y="170" width="120" height="14" rx="7" fill="white" opacity="0.9"/>
+  <rect x="160" y="191" width="72" height="10" rx="5" fill="white" opacity="0.55"/>
+
+  <!-- Calendar grid - Row 1 -->
+  <circle cx="148" cy="308" r="22" fill="#FF6B35"/>
+  <circle cx="212" cy="308" r="22" fill="#F5F0FF"/>
+  <circle cx="276" cy="308" r="22" fill="#F5F0FF"/>
+  <circle cx="340" cy="308" r="22" fill="#5B7FFF"/>
+  <circle cx="404" cy="308" r="22" fill="#F5F0FF"/>
+
+  <!-- Row 2 -->
+  <circle cx="148" cy="370" r="22" fill="#F5F0FF"/>
+  <circle cx="212" cy="370" r="22" fill="#FFD166"/>
+  <circle cx="276" cy="370" r="22" fill="#F5F0FF"/>
+  <circle cx="340" cy="370" r="22" fill="#F5F0FF"/>
+  <circle cx="404" cy="370" r="22" fill="#06D6A0"/>
+
+  <!-- Row 3 -->
+  <circle cx="148" cy="432" r="22" fill="#F5F0FF"/>
+  <circle cx="212" cy="432" r="22" fill="#F5F0FF"/>
+  <circle cx="276" cy="432" r="22" fill="#FF5FA0"/>
+  <circle cx="340" cy="432" r="22" fill="#F5F0FF"/>
+  <circle cx="404" cy="432" r="22" fill="#F5F0FF"/>
+
+  <!-- Task dots on some cells -->
+  <circle cx="148" cy="325" r="4" fill="white" opacity="0.9"/>
+  <circle cx="340" cy="325" r="4" fill="white" opacity="0.9"/>
+  <circle cx="212" cy="387" r="4" fill="#1D1640" opacity="0.35"/>
+  <circle cx="404" cy="387" r="4" fill="white" opacity="0.9"/>
+</svg>
