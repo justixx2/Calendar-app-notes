@@ -407,6 +407,127 @@
   .placeholder-panel p { font-size: 13px; font-weight: 800; line-height: 1.5; color: var(--text); }
   .placeholder-panel .sub { font-size: 11px; font-weight: 600; margin-top: 4px; color: var(--text-dim); }
 
+  /* ── PENDING PANEL ─────────────────────────────── */
+  .pending-bar { margin-bottom: 10px; }
+
+  .pending-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.14s;
+    box-shadow: 0 2px 8px rgba(91,127,255,0.08);
+    text-align: left;
+  }
+  .pending-btn:hover { border-color: var(--blue); }
+  .pending-btn.active {
+    background: var(--blue);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(91,127,255,0.35);
+  }
+  .pending-btn-label { flex: 1; }
+  .pending-btn-count {
+    background: var(--coral);
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+  .pending-btn.active .pending-btn-count { background: rgba(255,255,255,0.25); }
+  .pending-btn-count.zero { background: var(--border); color: var(--text-dim); }
+
+  .pending-panel {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 20px rgba(91,127,255,0.1);
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .pending-empty {
+    text-align: center;
+    padding: 22px 0 14px;
+    color: var(--text-dim);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .pending-empty-icon { font-size: 30px; margin-bottom: 6px; }
+
+  .pending-section-label {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    color: var(--text-dim);
+    padding: 8px 2px 5px;
+  }
+  .pending-section-label:first-child { padding-top: 2px; }
+
+  .pending-group {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 9px 11px;
+    margin-bottom: 6px;
+  }
+  .pending-group:last-child { margin-bottom: 0; }
+
+  .pending-date {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .pending-date-label {
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--text);
+    transition: color 0.13s;
+  }
+  .pending-date:hover .pending-date-label { color: var(--blue); }
+
+  .pending-count-badge {
+    background: var(--coral);
+    color: #fff;
+    border-radius: 20px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .pending-task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-top: 1px solid var(--border);
+  }
+  .pending-task-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
   /* ── MOBILE ────────────────────────────────────── */
   @media (max-width: 700px) {
     .layout { flex-direction: column; gap: 10px; }
@@ -442,7 +563,8 @@ var state = {
   year: new Date().getFullYear(),
   month: new Date().getMonth(),
   selectedDate: null,
-  tasks: {}
+  tasks: {},
+  showPending: false
 };
 
 function loadTasks() {
@@ -540,6 +662,89 @@ function deleteTask(key, id) {
   if (state.tasks[key].length === 0) delete state.tasks[key];
   saveTasks();
   render();
+}
+
+function togglePending() {
+  state.showPending = !state.showPending;
+  render();
+}
+
+function goToDate(y, m, d) {
+  state.year = y;
+  state.month = m;
+  state.selectedDate = d;
+  state.showPending = false;
+  render();
+  if (document.activeElement && document.activeElement !== document.body) {
+    document.activeElement.blur();
+  }
+}
+
+function renderPendingPanel() {
+  var now = new Date();
+  var todayKey = dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+  var allKeys = Object.keys(state.tasks).sort();
+  var groups = [];
+
+  for (var a = 0; a < allKeys.length; a++) {
+    var aKey = allKeys[a];
+    var pending = state.tasks[aKey].filter(function(t) { return !t.done; });
+    if (pending.length > 0) {
+      var parts = aKey.split('-');
+      groups.push({
+        key: aKey,
+        year: parseInt(parts[0]),
+        month: parseInt(parts[1]) - 1,
+        day: parseInt(parts[2]),
+        tasks: pending,
+        isToday: aKey === todayKey,
+        isPast: aKey < todayKey
+      });
+    }
+  }
+
+  if (groups.length === 0) {
+    return '<div class="pending-panel">' +
+      '<div class="pending-empty"><div class="pending-empty-icon">🎉</div>All caught up! No pending tasks.</div>' +
+    '</div>';
+  }
+
+  var html = '<div class="pending-panel">';
+  var lastSection = '';
+
+  for (var b = 0; b < groups.length; b++) {
+    var g = groups[b];
+    var section = g.isToday ? 'today' : (g.isPast ? 'past' : 'upcoming');
+
+    if (section !== lastSection) {
+      var sLabel = section === 'today' ? '📅 Today' : (section === 'past' ? '⏰ Overdue' : '🗓 Upcoming');
+      html += '<div class="pending-section-label">' + sLabel + '</div>';
+      lastSection = section;
+    }
+
+    var dayAbbr = DAYS_SHORT[new Date(g.year, g.month, g.day).getDay()];
+    var dateStr = dayAbbr + ' · ' + MONTHS[g.month].slice(0, 3) + ' ' + g.day +
+      (g.year !== now.getFullYear() ? ', ' + g.year : '');
+
+    html += '<div class="pending-group">' +
+      '<div class="pending-date" onclick="goToDate(' + g.year + ',' + g.month + ',' + g.day + ')">' +
+        '<span class="pending-date-label">' + dateStr + '</span>' +
+        '<span class="pending-count-badge">' + g.tasks.length + '</span>' +
+      '</div>';
+
+    for (var c = 0; c < g.tasks.length; c++) {
+      var pt = g.tasks[c];
+      html += '<div class="pending-task-item">' +
+        '<button class="check-btn" onclick="toggleTask(\'' + g.key + '\',' + pt.id + ')"></button>' +
+        '<span class="pending-task-text">' + escHtml(pt.text) + '</span>' +
+      '</div>';
+    }
+
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
 }
 
 function escHtml(s) {
@@ -653,6 +858,21 @@ function render() {
     dayLabels += '<div class="day-label">' + DAYS_SHORT[n] + '</div>';
   }
 
+  /* ── pending bar ── */
+  var totalPending = 0;
+  var pKeys = Object.keys(state.tasks);
+  for (var p = 0; p < pKeys.length; p++) {
+    var pList = state.tasks[pKeys[p]];
+    for (var q = 0; q < pList.length; q++) { if (!pList[q].done) totalPending++; }
+  }
+  var pendingBar =
+    '<div class="pending-bar">' +
+      '<button class="pending-btn' + (state.showPending ? ' active' : '') + '" onclick="togglePending()">' +
+        '📋 <span class="pending-btn-label">Pending Tasks</span>' +
+        '<span class="pending-btn-count' + (totalPending === 0 ? ' zero' : '') + '">' + totalPending + '</span>' +
+      '</button>' +
+    '</div>';
+
   app.innerHTML =
     '<div class="header">' +
       '<button class="nav-btn" onclick="prevMonth()">&#9664;</button>' +
@@ -662,6 +882,8 @@ function render() {
       '</div>' +
       '<button class="nav-btn" onclick="nextMonth()">&#9654;</button>' +
     '</div>' +
+    pendingBar +
+    (state.showPending ? renderPendingPanel() : '') +
     '<div class="layout">' +
       '<div class="cal-side">' +
         '<div class="day-labels">' + dayLabels + '</div>' +
