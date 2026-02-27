@@ -696,6 +696,16 @@
     white-space: nowrap;
   }
 
+  .sport-btn-count {
+    background: var(--purple);
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 900;
+    flex-shrink: 0;
+  }
+
   .sched-type { display: flex; gap: 6px; margin: 8px 0 6px; }
   .sched-type-opt {
     flex: 1;
@@ -1368,7 +1378,14 @@ function render() {
     (!state.sportMode ? pendingBar : '') +
     (!state.sportMode && state.showPending ? renderPendingPanel() : '') +
     '<div class="sport-bar">' +
-      '<button class="sport-btn' + (state.sportMode ? ' active' : '') + '" onclick="toggleSportMode()">🏋️ <span class="sport-btn-label">Sport Mode</span></button>' +
+      '<button class="sport-btn' + (state.sportMode ? ' active' : '') + '" onclick="toggleSportMode()">🏋️ <span class="sport-btn-label">Sport Mode</span>' +
+        (function() {
+          if (state.sportMode) return '';
+          var n = new Date();
+          var cnt = state.workouts.filter(function(w) { return isWorkoutScheduledForDay(w, n.getFullYear(), n.getMonth(), n.getDate()); }).length;
+          return cnt > 0 ? '<span class="sport-btn-count">' + cnt + '</span>' : '';
+        })() +
+      '</button>' +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showSportSettings ? ' active' : '') + '" onclick="toggleSportSettings()">⚙️</button>' : '') +
     '</div>' +
     (state.sportMode && state.showSportSettings ? renderSportSettingsPanel() : '') +
