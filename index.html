@@ -384,6 +384,21 @@
   .task-item:hover .del-btn { opacity: 1; }
   .del-btn:hover { color: var(--coral); }
 
+  .task-edit-input {
+    flex: 1;
+    padding: 5px 8px;
+    border-radius: 8px;
+    border: 2px solid var(--blue);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+    min-width: 0;
+  }
+  .task-item.editing { border-left-color: var(--blue); background: var(--surface); }
+
   /* ── EMPTY / PLACEHOLDER ───────────────────────── */
   .empty-state {
     text-align: center;
@@ -564,7 +579,8 @@ var state = {
   month: new Date().getMonth(),
   selectedDate: null,
   tasks: {},
-  showPending: false
+  showPending: false,
+  editingTask: null
 };
 
 function loadTasks() {
@@ -652,7 +668,63 @@ function toggleTask(key, id) {
   for (var i = 0; i < list.length; i++) {
     if (list[i].id === id) { list[i].done = !list[i].done; break; }
   }
+  if (navigator.vibrate) navigator.vibrate(50);
   saveTasks();
+  render();
+}
+
+/* ── swipe to change month ── */
+var swipeStartX = 0, swipeStartY = 0;
+function swipeTouchStart(e) {
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+}
+function swipeTouchEnd(e) {
+  var dx = e.changedTouches[0].clientX - swipeStartX;
+  var dy = e.changedTouches[0].clientY - swipeStartY;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (dx < 0) nextMonth(); else prevMonth();
+  }
+}
+
+/* ── long-press to edit task ── */
+var longPressTimer = null;
+function taskLongPressStart(key, id) {
+  taskLongPressEnd();
+  longPressTimer = setTimeout(function() {
+    longPressTimer = null;
+    if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+    startEditTask(key, id);
+  }, 500);
+}
+function taskLongPressEnd() {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+}
+function startEditTask(key, id) {
+  state.editingTask = { key: key, id: id };
+  render();
+  setTimeout(function() {
+    var el = document.getElementById('editInput');
+    if (el) { el.focus(); el.select(); }
+  }, 30);
+}
+function saveEditTask() {
+  if (!state.editingTask) return;
+  var el = document.getElementById('editInput');
+  var text = el ? el.value.trim() : '';
+  var key = state.editingTask.key;
+  var id = state.editingTask.id;
+  state.editingTask = null;
+  if (text && state.tasks[key]) {
+    for (var ei = 0; ei < state.tasks[key].length; ei++) {
+      if (state.tasks[key][ei].id === id) { state.tasks[key][ei].text = text; break; }
+    }
+    saveTasks();
+  }
+  render();
+}
+function cancelEditTask() {
+  state.editingTask = null;
   render();
 }
 
@@ -753,6 +825,10 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
+function escAttr(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function render() {
   var app = document.getElementById("app");
   var firstDay = new Date(state.year, state.month, 1).getDay();
@@ -814,15 +890,29 @@ function render() {
       taskItems = '<div class="task-list">';
       for (var m = 0; m < selTasks.length; m++) {
         var t = selTasks[m];
-        var itemCls = "task-item" + (t.done ? " task-done-item" : "");
-        taskItems +=
-          '<div class="' + itemCls + '">' +
-            '<button class="check-btn ' + (t.done ? 'done' : '') + '" onclick="toggleTask(\'' + selKey + '\',' + t.id + ')">' +
-              (t.done ? '&#10003;' : '') +
-            '</button>' +
-            '<span class="task-text ' + (t.done ? 'done' : '') + '">' + escHtml(t.text) + '</span>' +
-            '<button class="del-btn" onclick="deleteTask(\'' + selKey + '\',' + t.id + ')">&#215;</button>' +
-          '</div>';
+        var isEditing = state.editingTask && state.editingTask.key === selKey && state.editingTask.id === t.id;
+        if (isEditing) {
+          taskItems +=
+            '<div class="task-item editing">' +
+              '<input id="editInput" class="task-edit-input" value="' + escAttr(t.text) + '" ' +
+                'onkeydown="if(event.key===\'Enter\')saveEditTask();if(event.key===\'Escape\')cancelEditTask()" ' +
+                'onblur="saveEditTask()">' +
+            '</div>';
+        } else {
+          var itemCls = "task-item" + (t.done ? " task-done-item" : "");
+          taskItems +=
+            '<div class="' + itemCls + '"' +
+              ' ontouchstart="taskLongPressStart(\'' + selKey + '\',' + t.id + ')"' +
+              ' ontouchend="taskLongPressEnd()" ontouchmove="taskLongPressEnd()"' +
+              ' ondblclick="startEditTask(\'' + selKey + '\',' + t.id + ')"' +
+              ' oncontextmenu="return false">' +
+              '<button class="check-btn ' + (t.done ? 'done' : '') + '" onclick="toggleTask(\'' + selKey + '\',' + t.id + ')">' +
+                (t.done ? '&#10003;' : '') +
+              '</button>' +
+              '<span class="task-text ' + (t.done ? 'done' : '') + '">' + escHtml(t.text) + '</span>' +
+              '<button class="del-btn" onclick="deleteTask(\'' + selKey + '\',' + t.id + ')">&#215;</button>' +
+            '</div>';
+        }
       }
       taskItems += '</div>';
     }
@@ -885,7 +975,7 @@ function render() {
     pendingBar +
     (state.showPending ? renderPendingPanel() : '') +
     '<div class="layout">' +
-      '<div class="cal-side">' +
+      '<div class="cal-side" ontouchstart="swipeTouchStart(event)" ontouchend="swipeTouchEnd(event)">' +
         '<div class="day-labels">' + dayLabels + '</div>' +
         '<div class="cal-grid">' + calCells + '</div>' +
       '</div>' +
