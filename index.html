@@ -685,6 +685,56 @@
   .add-workout-btn:hover { filter: brightness(1.08); }
   .add-workout-btn:active { transform: scale(0.97); }
 
+  .workout-interval-badge {
+    background: var(--purple);
+    color: #fff;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 900;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .sched-type { display: flex; gap: 6px; margin: 8px 0 6px; }
+  .sched-type-opt {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.13s;
+    color: var(--text-dim);
+    user-select: none;
+    font-family: 'Nunito', sans-serif;
+  }
+  .sched-type-opt input { display: none; }
+  .sched-type-opt:has(input:checked) { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+  .interval-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 4px; flex-wrap: wrap; }
+  .interval-input {
+    width: 64px;
+    padding: 7px 8px;
+    border-radius: 9px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    text-align: center;
+    outline: none;
+  }
+  .interval-input:focus { border-color: var(--purple); }
+  .interval-label { font-size: 13px; font-weight: 800; color: var(--text); }
+  .interval-date-input { margin-top: 6px; width: 100%; }
+
   /* ── MOBILE ────────────────────────────────────── */
   @media (max-width: 700px) {
     .layout { flex-direction: column; gap: 10px; }
@@ -904,13 +954,26 @@ function addWorkout() {
   var nameEl = document.getElementById('workoutInput');
   var name = nameEl ? nameEl.value.trim() : '';
   if (!name) return;
-  var days = [];
-  for (var wi = 0; wi < 7; wi++) {
-    var cb = document.getElementById('wd' + wi);
-    if (cb && cb.checked) days.push(wi);
+  var intervalRadio = document.getElementById('schedInterval');
+  var isInterval = intervalRadio && intervalRadio.checked;
+  var workout;
+  if (isInterval) {
+    var nEl = document.getElementById('intervalDays');
+    var n = nEl ? parseInt(nEl.value) : 2;
+    if (!n || n < 1) n = 1;
+    var startEl = document.getElementById('intervalStart');
+    var startDate = (startEl && startEl.value) ? startEl.value : new Date().toISOString().split('T')[0];
+    workout = { id: Date.now(), name: name, type: 'interval', intervalDays: n, startDate: startDate };
+  } else {
+    var days = [];
+    for (var wi = 0; wi < 7; wi++) {
+      var cb = document.getElementById('wd' + wi);
+      if (cb && cb.checked) days.push(wi);
+    }
+    if (days.length === 0) return;
+    workout = { id: Date.now(), name: name, type: 'weekly', days: days };
   }
-  if (days.length === 0) return;
-  state.workouts.push({ id: Date.now(), name: name, days: days });
+  state.workouts.push(workout);
   saveWorkouts();
   render();
 }
@@ -928,6 +991,25 @@ function toggleWorkoutDone(key, workoutId) {
   saveWorkouts();
   render();
 }
+function isWorkoutScheduledForDay(workout, year, month, day) {
+  if (workout.type === 'interval') {
+    var target = new Date(year, month, day);
+    var sp = workout.startDate.split('-');
+    var start = new Date(parseInt(sp[0]), parseInt(sp[1]) - 1, parseInt(sp[2]));
+    var diffDays = Math.round((target - start) / 86400000);
+    return diffDays >= 0 && diffDays % workout.intervalDays === 0;
+  }
+  var dow = new Date(year, month, day).getDay();
+  return workout.days && workout.days.indexOf(dow) !== -1;
+}
+
+function toggleSchedType(type) {
+  var ws = document.getElementById('weeklySection');
+  var is = document.getElementById('intervalSection');
+  if (ws) ws.style.display = type === 'weekly' ? '' : 'none';
+  if (is) is.style.display = type === 'interval' ? '' : 'none';
+}
+
 function renderSportDayPanel() {
   if (!state.selectedDate) {
     return '<div class="placeholder-panel"><div class="icon">🏋️</div><p>Pick a day to see workouts</p><div class="sub">Tap any date on the calendar</div></div>';
@@ -935,7 +1017,7 @@ function renderSportDayPanel() {
   var dow = new Date(state.year, state.month, state.selectedDate).getDay();
   var sKey = dateKey(state.year, state.month, state.selectedDate);
   var todayLbl = isToday(state.selectedDate) ? ' · Today' : '';
-  var dayWorkouts = state.workouts.filter(function(w) { return w.days.indexOf(dow) !== -1; });
+  var dayWorkouts = state.workouts.filter(function(w) { return isWorkoutScheduledForDay(w, state.year, state.month, state.selectedDate); });
   var doneList = state.workoutDone[sKey] || [];
   var doneCount = dayWorkouts.filter(function(w) { return doneList.indexOf(w.id) !== -1; }).length;
   var badgeClass = "task-count-badge zero", badgeText = "Rest day";
@@ -981,11 +1063,17 @@ function renderSportSettingsPanel() {
     html += '<div class="workout-list">';
     for (var ri = 0; ri < state.workouts.length; ri++) {
       var rw = state.workouts[ri];
-      var pills = '';
-      for (var rdi = 0; rdi < rw.days.length; rdi++) pills += '<span class="day-pill-static">' + DL[rw.days[rdi]] + '</span>';
+      var schedBadge = '';
+      if (rw.type === 'interval') {
+        schedBadge = '<span class="workout-interval-badge">Every ' + rw.intervalDays + 'd</span>';
+      } else {
+        var pills = '';
+        for (var rdi = 0; rdi < (rw.days || []).length; rdi++) pills += '<span class="day-pill-static">' + DL[rw.days[rdi]] + '</span>';
+        schedBadge = '<div class="workout-days">' + pills + '</div>';
+      }
       html += '<div class="workout-row">' +
         '<span class="workout-name">' + escHtml(rw.name) + '</span>' +
-        '<div class="workout-days">' + pills + '</div>' +
+        schedBadge +
         '<button class="workout-del" onclick="deleteWorkout(' + rw.id + ')">&#215;</button>' +
       '</div>';
     }
@@ -993,13 +1081,26 @@ function renderSportSettingsPanel() {
   } else {
     html += '<div class="workout-empty">No workouts yet — add one below!</div>';
   }
+  var todayStr = new Date().toISOString().split('T')[0];
   var dayChecks = '';
   for (var di = 0; di < 7; di++) dayChecks += '<label class="day-pill"><input type="checkbox" id="wd' + di + '">' + DL[di] + '</label>';
   html +=
     '<div class="add-workout">' +
       '<div class="add-workout-label">Add New Workout</div>' +
       '<input id="workoutInput" class="task-input" placeholder="e.g. Six pack, Neck exercises..." onkeydown="if(event.key===\'Enter\')addWorkout()">' +
-      '<div class="day-picker">' + dayChecks + '</div>' +
+      '<div class="sched-type">' +
+        '<label class="sched-type-opt"><input type="radio" name="sct" id="schedWeekly" checked onchange="toggleSchedType(\'weekly\')">📅 Weekdays</label>' +
+        '<label class="sched-type-opt"><input type="radio" name="sct" id="schedInterval" onchange="toggleSchedType(\'interval\')">🔁 Every N days</label>' +
+      '</div>' +
+      '<div id="weeklySection"><div class="day-picker">' + dayChecks + '</div></div>' +
+      '<div id="intervalSection" style="display:none">' +
+        '<div class="interval-row">' +
+          '<span class="interval-label">Every</span>' +
+          '<input type="number" id="intervalDays" class="interval-input" min="1" max="365" value="2">' +
+          '<span class="interval-label">days</span>' +
+        '</div>' +
+        '<input type="date" id="intervalStart" class="task-input interval-date-input" value="' + todayStr + '">' +
+      '</div>' +
       '<button class="add-workout-btn" onclick="addWorkout()">+ Add Workout</button>' +
     '</div>';
   html += '</div>';
@@ -1125,7 +1226,7 @@ function render() {
 
     if (state.sportMode) {
       var dow = new Date(state.year, state.month, d).getDay();
-      var dayWs = state.workouts.filter(function(ws) { return ws.days.indexOf(dow) !== -1; });
+      var dayWs = state.workouts.filter(function(ws) { return isWorkoutScheduledForDay(ws, state.year, state.month, d); });
       if (dayWs.length > 0) {
         var wDone = state.workoutDone[key] || [];
         var wDoneCount = dayWs.filter(function(ws) { return wDone.indexOf(ws.id) !== -1; }).length;
