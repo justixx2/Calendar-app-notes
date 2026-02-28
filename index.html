@@ -817,13 +817,15 @@ function isToday(d) {
 
 function prevMonth() {
   if (state.month === 0) { state.month = 11; state.year--; } else state.month--;
-  state.selectedDate = null;
+  var n = new Date();
+  state.selectedDate = (state.month === n.getMonth() && state.year === n.getFullYear()) ? n.getDate() : null;
   render();
 }
 
 function nextMonth() {
   if (state.month === 11) { state.month = 0; state.year++; } else state.month++;
-  state.selectedDate = null;
+  var n = new Date();
+  state.selectedDate = (state.month === n.getMonth() && state.year === n.getFullYear()) ? n.getDate() : null;
   render();
 }
 
@@ -1375,7 +1377,7 @@ function render() {
       '<button class="nav-btn" onclick="prevMonth()">&#9664;</button>' +
       '<div class="header-center">' +
         '<h1>' + MONTHS[state.month] + '<span>' + state.year + '</span></h1>' +
-        '<button class="today-btn" onclick="goToday()">Today</button>' +
+        (function() { var n = new Date(); return (state.month !== n.getMonth() || state.year !== n.getFullYear()) ? '<button class="today-btn" onclick="goToday()">Today</button>' : ''; })() +
       '</div>' +
       '<button class="nav-btn" onclick="nextMonth()">&#9654;</button>' +
     '</div>' +
