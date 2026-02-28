@@ -1382,8 +1382,13 @@ function render() {
         (function() {
           if (state.sportMode) return '';
           var n = new Date();
-          var cnt = state.workouts.filter(function(w) { return isWorkoutScheduledForDay(w, n.getFullYear(), n.getMonth(), n.getDate()); }).length;
-          return cnt > 0 ? '<span class="sport-btn-count">' + cnt + '</span>' : '';
+          var todayWs = state.workouts.filter(function(w) { return isWorkoutScheduledForDay(w, n.getFullYear(), n.getMonth(), n.getDate()); });
+          if (todayWs.length === 0) return '';
+          var todayKey = dateKey(n.getFullYear(), n.getMonth(), n.getDate());
+          var doneList = state.workoutDone[todayKey] || [];
+          var done = todayWs.filter(function(w) { return doneList.indexOf(w.id) !== -1; }).length;
+          var cls = done === todayWs.length ? 'task-count-badge all-done' : (done > 0 ? 'task-count-badge some-done' : 'task-count-badge none-done');
+          return '<span class="' + cls + '">' + done + '/' + todayWs.length + '</span>';
         })() +
       '</button>' +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showSportSettings ? ' active' : '') + '" onclick="toggleSportSettings()">⚙️</button>' : '') +
