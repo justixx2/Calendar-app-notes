@@ -770,6 +770,10 @@
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(function(){});
+  // Auto-reload when a new service worker takes control (ensures home screen app always gets latest version)
+  navigator.serviceWorker.addEventListener("controllerchange", function() {
+    window.location.reload();
+  });
 }
 
 var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
