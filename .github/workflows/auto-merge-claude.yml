@@ -1,0 +1,32 @@
+name: Auto-merge Claude branch to main
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge Claude branch (Claude always wins conflicts)
+        run: |
+          git fetch origin ${{ github.ref_name }}
+          git merge origin/${{ github.ref_name }} --strategy-option=theirs --no-edit -m "Auto-merge ${{ github.ref_name }} into main"
+
+      - name: Push to main
+        run: git push origin main
