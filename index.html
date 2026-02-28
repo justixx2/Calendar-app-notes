@@ -769,7 +769,9 @@
 
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(function(){});
+  navigator.serviceWorker.register("sw.js").then(function(reg) {
+    reg.update(); // Check for SW updates on every load
+  }).catch(function(){});
 }
 
 var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
