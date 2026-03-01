@@ -29,6 +29,19 @@
     --coral: #FF6B6B;
     --purple: #8B5FCF;
     --radius: 16px;
+    --header-gradient: linear-gradient(130deg, #5B7FFF 0%, #8B5FCF 52%, #FF5FA0 100%);
+  }
+
+  body.sport-mode {
+    --bg: #EDFFF5;
+    --surface: #FFFFFF;
+    --border: #B8F0D4;
+    --text: #0A1F14;
+    --text-dim: #4A8A6A;
+    --blue: #00C853;
+    --purple: #009688;
+    --pink: #FF3D00;
+    --header-gradient: linear-gradient(130deg, #00C853 0%, #009688 52%, #FF6B35 100%);
   }
 
   html, body {
@@ -52,7 +65,7 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 14px;
-    background: linear-gradient(130deg, #5B7FFF 0%, #8B5FCF 52%, #FF5FA0 100%);
+    background: var(--header-gradient);
     border-radius: 20px;
     padding: 13px 16px;
     box-shadow: 0 6px 24px rgba(91,127,255,0.28);
@@ -958,8 +971,13 @@ function saveWorkouts() {
 }
 function toggleSportMode() {
   state.sportMode = !state.sportMode;
-  if (state.sportMode && state.workouts.length === 0) state.showSportSettings = true;
-  if (!state.sportMode) state.showSportSettings = false;
+  if (state.sportMode) {
+    document.body.classList.add('sport-mode');
+    if (state.workouts.length === 0) state.showSportSettings = true;
+  } else {
+    document.body.classList.remove('sport-mode');
+    state.showSportSettings = false;
+  }
   render();
 }
 function toggleSportSettings() {
