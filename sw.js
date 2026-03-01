@@ -1,4 +1,4 @@
-const CACHE_NAME = "task-calendar-v17";
+const CACHE_NAME = "task-calendar-v18";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
