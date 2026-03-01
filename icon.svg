@@ -1,60 +1,206 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5B7FFF"/>
-      <stop offset="50%" stop-color="#8B5FCF"/>
-      <stop offset="100%" stop-color="#FF5FA0"/>
+    <!-- Background: deep jewel-box indigo -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141228"/>
+      <stop offset="100%" stop-color="#281850"/>
     </linearGradient>
-    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#4268FF"/>
-      <stop offset="100%" stop-color="#7C5CBF"/>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#503880" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#281850" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Chrome frame -->
+    <linearGradient id="chrome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#EBEBEF"/>
+      <stop offset="25%"  stop-color="#C8C8CE"/>
+      <stop offset="50%"  stop-color="#DCDCE2"/>
+      <stop offset="75%"  stop-color="#ACACB2"/>
+      <stop offset="100%" stop-color="#989898"/>
     </linearGradient>
+
+    <!-- Ring binder chrome -->
+    <radialGradient id="ringGrad" cx="38%" cy="35%" r="62%">
+      <stop offset="0%"   stop-color="#F2F2F6"/>
+      <stop offset="45%"  stop-color="#BBBBBE"/>
+      <stop offset="100%" stop-color="#686870"/>
+    </radialGradient>
+
+    <!-- Header section inside frame -->
+    <linearGradient id="headerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#2C2850"/>
+      <stop offset="100%" stop-color="#1C183A"/>
+    </linearGradient>
+
+    <!-- Grid cell background -->
+    <linearGradient id="gridBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#1A1830"/>
+      <stop offset="100%" stop-color="#100E22"/>
+    </linearGradient>
+
+    <!-- ── GEM GRADIENTS (radial: bright top-left → deep bottom-right) ── -->
+    <radialGradient id="gRose" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#FFB8CA"/>
+      <stop offset="35%"  stop-color="#E04868"/>
+      <stop offset="75%"  stop-color="#9A1838"/>
+      <stop offset="100%" stop-color="#580C20"/>
+    </radialGradient>
+    <radialGradient id="gGold" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#FFF2A8"/>
+      <stop offset="35%"  stop-color="#E8A818"/>
+      <stop offset="75%"  stop-color="#A86810"/>
+      <stop offset="100%" stop-color="#603808"/>
+    </radialGradient>
+    <radialGradient id="gGreen" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#A0F0B8"/>
+      <stop offset="35%"  stop-color="#28A848"/>
+      <stop offset="75%"  stop-color="#0D6828"/>
+      <stop offset="100%" stop-color="#083018"/>
+    </radialGradient>
+    <radialGradient id="gBlue" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#A8CCFF"/>
+      <stop offset="35%"  stop-color="#2868E8"/>
+      <stop offset="75%"  stop-color="#0C38A8"/>
+      <stop offset="100%" stop-color="#081860"/>
+    </radialGradient>
+    <radialGradient id="gPurple" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#DCC8FF"/>
+      <stop offset="35%"  stop-color="#7848D0"/>
+      <stop offset="75%"  stop-color="#481898"/>
+      <stop offset="100%" stop-color="#280C58"/>
+    </radialGradient>
+    <radialGradient id="gOrange" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#FFD8A0"/>
+      <stop offset="35%"  stop-color="#E86818"/>
+      <stop offset="75%"  stop-color="#A83008"/>
+      <stop offset="100%" stop-color="#601800"/>
+    </radialGradient>
+    <radialGradient id="gAqua" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#A0F0E8"/>
+      <stop offset="35%"  stop-color="#18A8A0"/>
+      <stop offset="75%"  stop-color="#0A6870"/>
+      <stop offset="100%" stop-color="#083840"/>
+    </radialGradient>
+    <radialGradient id="gTopaz" cx="32%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#C8F0D8"/>
+      <stop offset="35%"  stop-color="#38C888"/>
+      <stop offset="75%"  stop-color="#108858"/>
+      <stop offset="100%" stop-color="#084830"/>
+    </radialGradient>
+
+    <!-- Gem gloss: white highlight upper-left -->
+    <linearGradient id="shine" x1="8%" y1="5%" x2="52%" y2="52%">
+      <stop offset="0%"   stop-color="white" stop-opacity="0.52"/>
+      <stop offset="55%"  stop-color="white" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Gem facet: diagonal shimmer stripe -->
+    <linearGradient id="facet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="42%"  stop-color="white" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="white" stop-opacity="0.15"/>
+      <stop offset="58%"  stop-color="white" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Drop shadow for the frame -->
+    <filter id="shadow" x="-8%" y="-6%" width="118%" height="120%">
+      <feDropShadow dx="2" dy="8" stdDeviation="10"
+                    flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
   </defs>
 
-  <!-- Background rounded square -->
-  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <!-- ══ BACKGROUND ══ -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect width="512" height="512" rx="112" fill="url(#bgGlow)"/>
 
-  <!-- Calendar body (white card) -->
-  <rect x="72" y="148" width="368" height="300" rx="30" fill="white" opacity="0.97"/>
+  <!-- ══ CALENDAR FRAME (chrome) ══ -->
+  <rect x="56" y="110" width="400" height="376" rx="30" fill="url(#chrome)" filter="url(#shadow)"/>
+  <!-- Top edge glint -->
+  <rect x="68" y="111" width="380" height="5" rx="2" fill="white" opacity="0.32"/>
+  <!-- Left edge glint -->
+  <rect x="57" y="122" width="5" height="352" rx="2" fill="white" opacity="0.22"/>
+  <!-- Top-left sparkle -->
+  <ellipse cx="90" cy="138" rx="24" ry="11" fill="white" opacity="0.30" transform="rotate(-30 90 138)"/>
 
-  <!-- Header bar inside calendar -->
-  <rect x="72" y="148" width="368" height="90" rx="30" fill="url(#headerGrad)"/>
-  <rect x="72" y="208" width="368" height="30" fill="url(#headerGrad)"/>
+  <!-- ══ HEADER STRIP ══ -->
+  <rect x="72" y="124" width="368" height="76" rx="18" fill="url(#headerBg)"/>
+  <!-- Month label lines -->
+  <rect x="100" y="144" width="110" height="12" rx="6" fill="#9880D8" opacity="0.80"/>
+  <rect x="100" y="163" width="68"  height="9"  rx="4" fill="#7060B0" opacity="0.55"/>
+  <!-- Today bubble -->
+  <circle cx="388" cy="162" r="26" fill="#5B7FFF" opacity="0.88"/>
+  <rect x="380" y="158" width="16" height="10" rx="4" fill="white" opacity="0.9"/>
 
-  <!-- Calendar ring binders -->
-  <rect x="162" y="104" width="26" height="80" rx="13" fill="#1D1640"/>
-  <rect x="324" y="104" width="26" height="80" rx="13" fill="#1D1640"/>
-  <rect x="168" y="108" width="14" height="72" rx="7" fill="#FF6B35" opacity="0.6"/>
-  <rect x="330" y="108" width="14" height="72" rx="7" fill="#FF5FA0" opacity="0.6"/>
+  <!-- Header / grid divider -->
+  <rect x="72" y="200" width="368" height="2" fill="#3A3458" opacity="0.8"/>
 
-  <!-- White text lines in header (simulating month text) -->
-  <rect x="160" y="170" width="120" height="14" rx="7" fill="white" opacity="0.9"/>
-  <rect x="160" y="191" width="72" height="10" rx="5" fill="white" opacity="0.55"/>
+  <!-- ══ GEM GRID BACKGROUND ══ -->
+  <rect x="72" y="204" width="368" height="270" rx="16" fill="url(#gridBg)"/>
 
-  <!-- Calendar grid - Row 1 -->
-  <circle cx="148" cy="308" r="22" fill="#FF6B35"/>
-  <circle cx="212" cy="308" r="22" fill="#F5F0FF"/>
-  <circle cx="276" cy="308" r="22" fill="#F5F0FF"/>
-  <circle cx="340" cy="308" r="22" fill="#5B7FFF"/>
-  <circle cx="404" cy="308" r="22" fill="#F5F0FF"/>
+  <!-- ══ GEMS  3 cols × 3 rows ══                          -->
+  <!-- Col x: 88 | 204 | 320     Width: 104                 -->
+  <!-- Row y: 218 | 304 | 390    Height: 74    Gap: 12      -->
+
+  <!-- Row 1 -->
+  <rect x="88"  y="218" width="104" height="74" rx="13" fill="url(#gRose)"/>
+  <rect x="88"  y="218" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="88"  y="218" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="94"  y="223" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
+
+  <rect x="204" y="218" width="104" height="74" rx="13" fill="url(#gGold)"/>
+  <rect x="204" y="218" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="204" y="218" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="210" y="223" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
+
+  <rect x="320" y="218" width="104" height="74" rx="13" fill="url(#gGreen)"/>
+  <rect x="320" y="218" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="320" y="218" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="326" y="223" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
 
   <!-- Row 2 -->
-  <circle cx="148" cy="370" r="22" fill="#F5F0FF"/>
-  <circle cx="212" cy="370" r="22" fill="#FFD166"/>
-  <circle cx="276" cy="370" r="22" fill="#F5F0FF"/>
-  <circle cx="340" cy="370" r="22" fill="#F5F0FF"/>
-  <circle cx="404" cy="370" r="22" fill="#06D6A0"/>
+  <rect x="88"  y="304" width="104" height="74" rx="13" fill="url(#gBlue)"/>
+  <rect x="88"  y="304" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="88"  y="304" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="94"  y="309" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
+
+  <rect x="204" y="304" width="104" height="74" rx="13" fill="url(#gPurple)"/>
+  <rect x="204" y="304" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="204" y="304" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="210" y="309" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
+
+  <rect x="320" y="304" width="104" height="74" rx="13" fill="url(#gOrange)"/>
+  <rect x="320" y="304" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="320" y="304" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="326" y="309" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
 
   <!-- Row 3 -->
-  <circle cx="148" cy="432" r="22" fill="#F5F0FF"/>
-  <circle cx="212" cy="432" r="22" fill="#F5F0FF"/>
-  <circle cx="276" cy="432" r="22" fill="#FF5FA0"/>
-  <circle cx="340" cy="432" r="22" fill="#F5F0FF"/>
-  <circle cx="404" cy="432" r="22" fill="#F5F0FF"/>
+  <rect x="88"  y="390" width="104" height="74" rx="13" fill="url(#gAqua)"/>
+  <rect x="88"  y="390" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="88"  y="390" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="94"  y="395" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
 
-  <!-- Task dots on some cells -->
-  <circle cx="148" cy="325" r="4" fill="white" opacity="0.9"/>
-  <circle cx="340" cy="325" r="4" fill="white" opacity="0.9"/>
-  <circle cx="212" cy="387" r="4" fill="#1D1640" opacity="0.35"/>
-  <circle cx="404" cy="387" r="4" fill="white" opacity="0.9"/>
+  <rect x="204" y="390" width="104" height="74" rx="13" fill="url(#gTopaz)"/>
+  <rect x="204" y="390" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="204" y="390" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="210" y="395" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
+
+  <rect x="320" y="390" width="104" height="74" rx="13" fill="url(#gRose)"/>
+  <rect x="320" y="390" width="104" height="74" rx="13" fill="url(#facet)"/>
+  <rect x="320" y="390" width="104" height="74" rx="13" fill="url(#shine)"/>
+  <rect x="326" y="395" width="38"  height="22" rx="8"  fill="white" opacity="0.20"/>
+
+  <!-- ══ BINDER RINGS ══ -->
+  <!-- Left ring (outer shadow → chrome donut → dark hole → glint) -->
+  <circle cx="152" cy="112" r="26" fill="#484850"/>
+  <circle cx="152" cy="112" r="20" fill="#101020"/>
+  <circle cx="152" cy="112" r="15" fill="url(#ringGrad)"/>
+  <circle cx="152" cy="112" r="8"  fill="#0C0A1A"/>
+  <ellipse cx="147" cy="107" rx="5" ry="3" fill="white" opacity="0.50" transform="rotate(-20 147 107)"/>
+
+  <!-- Right ring -->
+  <circle cx="360" cy="112" r="26" fill="#484850"/>
+  <circle cx="360" cy="112" r="20" fill="#101020"/>
+  <circle cx="360" cy="112" r="15" fill="url(#ringGrad)"/>
+  <circle cx="360" cy="112" r="8"  fill="#0C0A1A"/>
+  <ellipse cx="355" cy="107" rx="5" ry="3" fill="white" opacity="0.50" transform="rotate(-20 355 107)"/>
 </svg>
