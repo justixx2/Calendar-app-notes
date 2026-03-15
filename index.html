@@ -1256,7 +1256,12 @@ function addOnceWorkout(dateStr) {
   var nameEl = document.getElementById('onceWorkoutInput');
   var name = nameEl ? nameEl.value.trim() : '';
   if (!name) return;
-  state.workouts.push({ id: Date.now(), name: name, type: 'once', date: dateStr });
+  var tagIds = [];
+  for (var ti = 0; ti < state.exerciseTags.length; ti++) {
+    var tcb = document.getElementById('oncetag_' + state.exerciseTags[ti].id);
+    if (tcb && tcb.checked) tagIds.push(state.exerciseTags[ti].id);
+  }
+  state.workouts.push({ id: Date.now(), name: name, type: 'once', date: dateStr, tagIds: tagIds });
   state.showOnceForm = false;
   saveWorkouts();
   render();
@@ -1311,10 +1316,21 @@ function renderSportDayPanel() {
     }
     items += '</div>';
   }
+  var onceTagPicker = '';
+  if (state.showOnceForm && state.exerciseTags.length > 0) {
+    var oncePills = state.exerciseTags.map(function(et) {
+      return '<label class="tag-pick-pill"><input type="checkbox" id="oncetag_' + et.id + '">' + escHtml(et.name) + '</label>';
+    }).join('');
+    onceTagPicker = '<div class="tag-picker-section">' +
+      '<div class="tag-picker-label">Link exercises</div>' +
+      '<div class="tag-picker-pills">' + oncePills + '</div>' +
+    '</div>';
+  }
   var onceForm = state.showOnceForm
     ? '<div class="once-form">' +
         '<input id="onceWorkoutInput" class="task-input" placeholder="e.g. Evening run, Yoga..." ' +
           'onkeydown="if(event.key===\'Enter\')addOnceWorkout(\'' + sKey + '\')">' +
+        onceTagPicker +
         '<div class="once-form-row">' +
           '<button class="once-confirm-btn" onclick="addOnceWorkout(\'' + sKey + '\')">Add</button>' +
           '<button class="once-cancel-btn" onclick="toggleOnceForm()">Cancel</button>' +
