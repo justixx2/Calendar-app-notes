@@ -392,6 +392,54 @@
     opacity: 0.75;
   }
 
+  /* ── pin button (add to focus) on task items ── */
+  .pin-btn {
+    background: none; border: none;
+    font-size: 15px; line-height: 1;
+    color: var(--border); cursor: pointer;
+    padding: 0 2px; flex-shrink: 0;
+    transition: color 0.13s, transform 0.13s;
+  }
+  .pin-btn:hover { color: var(--blue); transform: scale(1.15); }
+  .pin-btn.active { color: var(--blue); }
+
+  /* ── focus bar button (in pending-bar) ── */
+  .focus-bar-btn {
+    display: flex; align-items: center; gap: 5px;
+    background: none; border: none;
+    color: var(--text-dim); font-size: 13px; font-weight: 700;
+    padding: 6px 10px; border-radius: 10px; cursor: pointer;
+    transition: background 0.13s, color 0.13s;
+  }
+  .focus-bar-btn:hover { background: var(--border); color: var(--text); }
+  .focus-bar-btn.active { background: var(--blue); color: #fff; }
+  .focus-bar-btn.active .pending-btn-count { background: rgba(255,255,255,0.25); color: #fff; }
+
+  /* ── focus panel ── */
+  .focus-panel { display: flex; flex-direction: column; height: 100%; }
+
+  /* ── focus item: from-date badge (tappable, navigates to that day) ── */
+  .focus-from-btn {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    color: var(--text-dim); cursor: pointer;
+    padding: 1px 7px; white-space: nowrap; flex-shrink: 0;
+    transition: border-color 0.13s, color 0.13s;
+  }
+  .focus-from-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* ── focus remove button ── */
+  .focus-remove-btn {
+    background: none; border: none;
+    color: var(--text-dim); cursor: pointer;
+    font-size: 16px; line-height: 1;
+    padding: 0 2px; opacity: 0.5; flex-shrink: 0;
+    transition: opacity 0.13s;
+  }
+  .focus-remove-btn:hover { opacity: 1; }
+
   .del-btn {
     background: none;
     border: none;
@@ -447,10 +495,10 @@
   .placeholder-panel .sub { font-size: 11px; font-weight: 600; margin-top: 4px; color: var(--text-dim); }
 
   /* ── PENDING PANEL ─────────────────────────────── */
-  .pending-bar { margin-bottom: 10px; }
+  .pending-bar { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
 
   .pending-btn {
-    width: 100%;
+    flex: 1;
     display: flex;
     align-items: center;
     gap: 9px;
@@ -958,7 +1006,9 @@ var state = {
   showOnceForm: false,
   workouts: [],
   workoutDone: {},
-  exerciseTags: []
+  exerciseTags: [],
+  focusList: [],
+  showFocus: false
 };
 
 function loadTasks() {
@@ -972,6 +1022,87 @@ function saveTasks() {
   try {
     localStorage.setItem("task-calendar-data", JSON.stringify(state.tasks));
   } catch(e) {}
+}
+function loadFocusList() {
+  try {
+    var saved = localStorage.getItem("focus-list");
+    if (saved) state.focusList = JSON.parse(saved) || [];
+  } catch(e) {}
+}
+function saveFocusList() {
+  try {
+    localStorage.setItem("focus-list", JSON.stringify(state.focusList));
+  } catch(e) {}
+}
+function isInFocus(key, id) {
+  for (var i = 0; i < state.focusList.length; i++) {
+    if (state.focusList[i].key === key && state.focusList[i].taskId === id) return true;
+  }
+  return false;
+}
+function addToFocus(key, id) {
+  if (isInFocus(key, id)) {
+    state.focusList = state.focusList.filter(function(fi) { return !(fi.key === key && fi.taskId === id); });
+  } else {
+    state.focusList.push({ key: key, taskId: id });
+  }
+  saveFocusList();
+  render();
+}
+function removeFromFocus(key, id) {
+  state.focusList = state.focusList.filter(function(fi) { return !(fi.key === key && fi.taskId === id); });
+  saveFocusList();
+  render();
+}
+function toggleFocusView() {
+  state.showFocus = !state.showFocus;
+  if (state.showFocus) state.showPending = false;
+  render();
+}
+function renderFocusPanel() {
+  var validItems = state.focusList.filter(function(fi) {
+    var list = state.tasks[fi.key] || [];
+    for (var i = 0; i < list.length; i++) { if (list[i].id === fi.taskId) return true; }
+    return false;
+  });
+  var doneCount = 0;
+  var itemsHtml = '';
+  if (validItems.length === 0) {
+    itemsHtml = '<div class="empty-state"><div class="icon">&#128204;</div>Pin tasks from any day to focus on them today.</div>';
+  } else {
+    itemsHtml = '<div class="task-list">';
+    for (var i = 0; i < validItems.length; i++) {
+      var fi = validItems[i];
+      var list = state.tasks[fi.key] || [];
+      var task = null;
+      for (var j = 0; j < list.length; j++) { if (list[j].id === fi.taskId) { task = list[j]; break; } }
+      if (!task) continue;
+      if (task.done) doneCount++;
+      var fp = fi.key.split('-');
+      var fromLabel = MONTHS[parseInt(fp[1])-1].slice(0,3) + ' ' + parseInt(fp[2]);
+      itemsHtml +=
+        '<div class="task-item' + (task.done ? ' task-done-item' : '') + '">' +
+          '<button class="check-btn ' + (task.done ? 'done' : '') + '" onclick="toggleTask(\'' + fi.key + '\',' + fi.taskId + ')">' +
+            (task.done ? '&#10003;' : '') + '</button>' +
+          '<span class="task-text ' + (task.done ? 'done' : '') + '">' + escHtml(task.text) + '</span>' +
+          '<button class="focus-from-btn" onclick="goToDate(' + fp[0] + ',' + (parseInt(fp[1])-1) + ',' + parseInt(fp[2]) + ')" title="Go to ' + fromLabel + '">' + fromLabel + '</button>' +
+          '<button class="focus-remove-btn" onclick="removeFromFocus(\'' + fi.key + '\',' + fi.taskId + ')">&#215;</button>' +
+        '</div>';
+    }
+    itemsHtml += '</div>';
+  }
+  var total = validItems.length;
+  var badgeClass = total === 0 ? 'task-count-badge zero' : (doneCount === total ? 'task-count-badge all-done' : (doneCount > 0 ? 'task-count-badge some-done' : 'task-count-badge none-done'));
+  return '<div class="focus-panel">' +
+    '<div class="task-panel-head">' +
+      '<div class="task-panel-head-left">' +
+        '<h2>Today\'s Focus</h2>' +
+        '<div class="task-date-sub">Pinned tasks</div>' +
+      '</div>' +
+      (total > 0 ? '<span class="' + badgeClass + '">' + doneCount + '/' + total + '</span>' : '') +
+    '</div>' +
+    itemsHtml +
+  '</div>';
 }
 
 function dateKey(y, m, d) {
@@ -1452,12 +1583,15 @@ function deleteTask(key, id) {
   if (!state.tasks[key]) return;
   state.tasks[key] = state.tasks[key].filter(function(x) { return x.id !== id; });
   if (state.tasks[key].length === 0) delete state.tasks[key];
+  state.focusList = state.focusList.filter(function(fi) { return !(fi.key === key && fi.taskId === id); });
   saveTasks();
+  saveFocusList();
   render();
 }
 
 function togglePending() {
   state.showPending = !state.showPending;
+  if (state.showPending) state.showFocus = false;
   render();
 }
 
@@ -1650,6 +1784,7 @@ function render() {
               '</button>' +
               '<span class="task-text ' + (t.done ? 'done' : '') + '">' + escHtml(t.text) + '</span>' +
               doneDateLabel +
+              '<button class="pin-btn' + (isInFocus(selKey, t.id) ? ' active' : '') + '" onclick="addToFocus(\'' + selKey + '\',' + t.id + ')" title="' + (isInFocus(selKey, t.id) ? 'Remove from Focus' : 'Add to Today\'s Focus') + '">&#8853;</button>' +
               '<button class="del-btn" onclick="deleteTask(\'' + selKey + '\',' + t.id + ')">&#215;</button>' +
             '</div>';
         }
@@ -1695,11 +1830,20 @@ function render() {
     var pList = state.tasks[pKeys[p]];
     for (var q = 0; q < pList.length; q++) { if (!pList[q].done) totalPending++; }
   }
+  var focusCount = state.focusList.filter(function(fi) {
+    var list = state.tasks[fi.key] || [];
+    for (var fj = 0; fj < list.length; fj++) { if (list[fj].id === fi.taskId) return true; }
+    return false;
+  }).length;
   var pendingBar =
     '<div class="pending-bar">' +
       '<button class="pending-btn' + (state.showPending ? ' active' : '') + '" onclick="togglePending()">' +
-        '📋 <span class="pending-btn-label">Pending Tasks</span>' +
+        '📋 <span class="pending-btn-label">Pending</span>' +
         '<span class="pending-btn-count' + (totalPending === 0 ? ' zero' : '') + '">' + totalPending + '</span>' +
+      '</button>' +
+      '<button class="focus-bar-btn' + (state.showFocus ? ' active' : '') + '" onclick="toggleFocusView()">' +
+        '&#128204; <span class="pending-btn-label">Today\'s Focus</span>' +
+        (focusCount > 0 ? '<span class="pending-btn-count">' + focusCount + '</span>' : '') +
       '</button>' +
     '</div>';
 
@@ -1736,7 +1880,7 @@ function render() {
         '<div class="day-labels">' + dayLabels + '</div>' +
         '<div class="cal-grid">' + calCells + '</div>' +
       '</div>' +
-      '<div class="task-side">' + taskPanel + '</div>' +
+      '<div class="task-side">' + (!state.sportMode && state.showFocus ? renderFocusPanel() : taskPanel) + '</div>' +
     '</div>';
 }
 
@@ -1744,6 +1888,7 @@ function render() {
 loadTasks();
 loadWorkouts();
 loadExerciseTags();
+loadFocusList();
 (function() {
   var t = new Date();
   state.year = t.getFullYear();
