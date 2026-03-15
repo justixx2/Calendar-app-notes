@@ -709,6 +709,91 @@
   .add-workout-btn:hover { filter: brightness(1.08); }
   .add-workout-btn:active { transform: scale(0.97); }
 
+  /* ── workout cell (text + tags column) in day panel ── */
+  .workout-cell {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  /* ── exercise tag links (day panel, tappable) ── */
+  .ex-tag-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .ex-tag-link {
+    font-size: 10px; font-weight: 700;
+    color: var(--blue);
+    border: 1.5px solid var(--blue);
+    border-radius: 20px;
+    padding: 2px 8px;
+    text-decoration: none;
+    opacity: 0.82;
+    transition: opacity 0.13s, background 0.13s;
+    white-space: nowrap;
+  }
+  .ex-tag-link:hover { opacity: 1; background: var(--blue); color: #fff; }
+
+  /* ── exercise tag static pills (settings workout row) ── */
+  .workout-name-col { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+  .ex-tag-row-static { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ex-tag-static {
+    font-size: 10px; font-weight: 700;
+    color: var(--blue); opacity: 0.7;
+    border: 1px solid var(--blue);
+    border-radius: 20px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+
+  /* ── tag picker in add-workout form ── */
+  .tag-picker-section { margin-bottom: 8px; }
+  .tag-picker-label {
+    font-size: 11px; font-weight: 700;
+    color: var(--text-dim); margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .tag-picker-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag-pick-pill {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 700;
+    color: var(--text-dim);
+    border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 3px 10px;
+    cursor: pointer; transition: all 0.13s;
+    user-select: none;
+  }
+  .tag-pick-pill input[type="checkbox"] { display: none; }
+  .tag-pick-pill:has(input:checked) {
+    background: var(--blue); border-color: var(--blue); color: #fff;
+  }
+
+  /* ── exercise library section ── */
+  .ex-library {
+    border-top: 1.5px solid var(--border);
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+  .ex-library-header {
+    font-size: 12px; font-weight: 800;
+    color: var(--text); margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .ex-library-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .ex-library-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ex-library-name-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ex-library-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .ex-library-url {
+    font-size: 11px; color: var(--blue); text-decoration: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    opacity: 0.75;
+  }
+  .ex-library-url:hover { opacity: 1; text-decoration: underline; }
+  .add-ex-form { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+
   /* ── one-time workout badge (settings list) ── */
   .workout-once-badge {
     background: var(--blue);
@@ -872,7 +957,8 @@ var state = {
   showSportSettings: false,
   showOnceForm: false,
   workouts: [],
-  workoutDone: {}
+  workoutDone: {},
+  exerciseTags: []
 };
 
 function loadTasks() {
@@ -1047,6 +1133,39 @@ function saveWorkouts() {
     localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone }));
   } catch(e) {}
 }
+function loadExerciseTags() {
+  try {
+    var saved = localStorage.getItem("exercise-tags");
+    if (saved) state.exerciseTags = JSON.parse(saved) || [];
+  } catch(e) {}
+}
+function saveExerciseTags() {
+  try {
+    localStorage.setItem("exercise-tags", JSON.stringify(state.exerciseTags));
+  } catch(e) {}
+}
+function addExerciseTag() {
+  var nameEl = document.getElementById('exTagName');
+  var urlEl = document.getElementById('exTagUrl');
+  var name = nameEl ? nameEl.value.trim() : '';
+  var url = urlEl ? urlEl.value.trim() : '';
+  if (!name || !url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  state.exerciseTags.push({ id: Date.now(), name: name, url: url });
+  saveExerciseTags();
+  if (nameEl) nameEl.value = '';
+  if (urlEl) urlEl.value = '';
+  render();
+}
+function deleteExerciseTag(id) {
+  state.exerciseTags = state.exerciseTags.filter(function(t) { return t.id !== id; });
+  state.workouts.forEach(function(w) {
+    if (w.tagIds) w.tagIds = w.tagIds.filter(function(tid) { return tid !== id; });
+  });
+  saveExerciseTags();
+  saveWorkouts();
+  render();
+}
 function toggleSportMode() {
   state.sportMode = !state.sportMode;
   if (state.sportMode) {
@@ -1085,6 +1204,12 @@ function addWorkout() {
     if (days.length === 0) return;
     workout = { id: Date.now(), name: name, type: 'weekly', days: days };
   }
+  var tagIds = [];
+  for (var ti = 0; ti < state.exerciseTags.length; ti++) {
+    var tcb = document.getElementById('wtag_' + state.exerciseTags[ti].id);
+    if (tcb && tcb.checked) tagIds.push(state.exerciseTags[ti].id);
+  }
+  workout.tagIds = tagIds;
   state.workouts.push(workout);
   saveWorkouts();
   render();
@@ -1163,11 +1288,24 @@ function renderSportDayPanel() {
       var sw = dayWorkouts[si];
       var isDone = doneList.indexOf(sw.id) !== -1;
       var cls = "task-item" + (isDone ? " task-done-item" : "");
+      var tagLinks = '';
+      if (sw.tagIds && sw.tagIds.length > 0) {
+        for (var ti2 = 0; ti2 < sw.tagIds.length; ti2++) {
+          var exTag = null;
+          for (var ei = 0; ei < state.exerciseTags.length; ei++) {
+            if (state.exerciseTags[ei].id === sw.tagIds[ti2]) { exTag = state.exerciseTags[ei]; break; }
+          }
+          if (exTag) tagLinks += '<a class="ex-tag-link" href="' + escAttr(exTag.url) + '" target="_blank" rel="noopener">' + escHtml(exTag.name) + '</a>';
+        }
+      }
       items +=
         '<div class="' + cls + '">' +
           '<button class="check-btn ' + (isDone ? 'done' : '') + '" onclick="toggleWorkoutDone(\'' + sKey + '\',' + sw.id + ')">' +
             (isDone ? '&#10003;' : '') + '</button>' +
-          '<span class="task-text ' + (isDone ? 'done' : '') + '">' + escHtml(sw.name) + '</span>' +
+          '<div class="workout-cell">' +
+            '<span class="task-text ' + (isDone ? 'done' : '') + '">' + escHtml(sw.name) + '</span>' +
+            (tagLinks ? '<div class="ex-tag-row">' + tagLinks + '</div>' : '') +
+          '</div>' +
           (sw.type === 'once' ? '<button class="once-del-btn" onclick="deleteWorkout(' + sw.id + ')" title="Remove">&#215;</button>' : '') +
         '</div>';
     }
@@ -1213,8 +1351,21 @@ function renderSportSettingsPanel() {
         for (var rdi = 0; rdi < (rw.days || []).length; rdi++) pills += '<span class="day-pill-static">' + DL[rw.days[rdi]] + '</span>';
         schedBadge = '<div class="workout-days">' + pills + '</div>';
       }
+      var rwTagPills = '';
+      if (rw.tagIds && rw.tagIds.length > 0) {
+        for (var wti = 0; wti < rw.tagIds.length; wti++) {
+          var wtag = null;
+          for (var wei = 0; wei < state.exerciseTags.length; wei++) {
+            if (state.exerciseTags[wei].id === rw.tagIds[wti]) { wtag = state.exerciseTags[wei]; break; }
+          }
+          if (wtag) rwTagPills += '<span class="ex-tag-static">' + escHtml(wtag.name) + '</span>';
+        }
+      }
       html += '<div class="workout-row">' +
-        '<span class="workout-name">' + escHtml(rw.name) + '</span>' +
+        '<div class="workout-name-col">' +
+          '<span class="workout-name">' + escHtml(rw.name) + '</span>' +
+          (rwTagPills ? '<div class="ex-tag-row-static">' + rwTagPills + '</div>' : '') +
+        '</div>' +
         schedBadge +
         '<button class="workout-del" onclick="deleteWorkout(' + rw.id + ')">&#215;</button>' +
       '</div>';
@@ -1243,7 +1394,39 @@ function renderSportSettingsPanel() {
         '</div>' +
         '<input type="date" id="intervalStart" class="task-input interval-date-input" value="' + todayStr + '">' +
       '</div>' +
+      (state.exerciseTags.length > 0
+        ? '<div class="tag-picker-section">' +
+            '<div class="tag-picker-label">Link exercises</div>' +
+            '<div class="tag-picker-pills">' +
+              state.exerciseTags.map(function(et) {
+                return '<label class="tag-pick-pill"><input type="checkbox" id="wtag_' + et.id + '">' + escHtml(et.name) + '</label>';
+              }).join('') +
+            '</div>' +
+          '</div>'
+        : '') +
       '<button class="add-workout-btn" onclick="addWorkout()">+ Add Workout</button>' +
+    '</div>' +
+    '<div class="ex-library">' +
+      '<div class="ex-library-header">Exercise Links</div>' +
+      (state.exerciseTags.length > 0
+        ? '<div class="ex-library-list">' +
+            state.exerciseTags.map(function(et) {
+              var displayUrl = et.url.replace(/^https?:\/\/(www\.)?/i, '').split('/')[0];
+              return '<div class="ex-library-row">' +
+                '<div class="ex-library-name-col">' +
+                  '<span class="ex-library-name">' + escHtml(et.name) + '</span>' +
+                  '<a class="ex-library-url" href="' + escAttr(et.url) + '" target="_blank" rel="noopener">' + escHtml(displayUrl) + '</a>' +
+                '</div>' +
+                '<button class="workout-del" onclick="deleteExerciseTag(' + et.id + ')">&#215;</button>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '<div class="workout-empty">No exercise links yet</div>') +
+      '<div class="add-ex-form">' +
+        '<input id="exTagName" class="task-input" placeholder="Name (e.g. Neck Rotation)" onkeydown="if(event.key===\'Enter\')document.getElementById(\'exTagUrl\').focus()">' +
+        '<input id="exTagUrl" class="task-input" type="url" placeholder="URL (YouTube, TikTok...)" onkeydown="if(event.key===\'Enter\')addExerciseTag()">' +
+        '<button class="add-workout-btn" onclick="addExerciseTag()">+ Add Link</button>' +
+      '</div>' +
     '</div>';
   html += '</div>';
   return html;
@@ -1544,6 +1727,7 @@ function render() {
 // Auto-select today on startup
 loadTasks();
 loadWorkouts();
+loadExerciseTags();
 (function() {
   var t = new Date();
   state.year = t.getFullYear();
