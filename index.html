@@ -1140,6 +1140,7 @@ function goToday() {
 
 function selectDate(d) {
   state.selectedDate = d;
+  state.showFocus = false;
   render();
   // Prevent browser from auto-focusing the input (avoids keyboard popup on mobile)
   if (document.activeElement && document.activeElement !== document.body) {
