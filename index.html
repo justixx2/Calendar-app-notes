@@ -534,6 +534,8 @@
   }
   .pending-btn.active .pending-btn-count { background: rgba(255,255,255,0.25); }
   .pending-btn-count.zero { background: var(--border); color: var(--text-dim); }
+  .pending-btn-count.all-done { background: var(--teal); }
+  .pending-btn-count.some-done { background: var(--yellow); color: var(--text); }
 
   .pending-panel {
     background: var(--surface);
@@ -1830,11 +1832,22 @@ function render() {
     var pList = state.tasks[pKeys[p]];
     for (var q = 0; q < pList.length; q++) { if (!pList[q].done) totalPending++; }
   }
-  var focusCount = state.focusList.filter(function(fi) {
+  var focusValid = state.focusList.filter(function(fi) {
     var list = state.tasks[fi.key] || [];
     for (var fj = 0; fj < list.length; fj++) { if (list[fj].id === fi.taskId) return true; }
     return false;
+  });
+  var focusCount = focusValid.length;
+  var focusDone = focusValid.filter(function(fi) {
+    var list = state.tasks[fi.key] || [];
+    for (var fj = 0; fj < list.length; fj++) { if (list[fj].id === fi.taskId && list[fj].done) return true; }
+    return false;
   }).length;
+  var focusBadge = '';
+  if (focusCount > 0) {
+    var fbCls = focusDone === focusCount ? 'pending-btn-count all-done' : (focusDone > 0 ? 'pending-btn-count some-done' : 'pending-btn-count');
+    focusBadge = '<span class="' + fbCls + '">' + focusDone + '/' + focusCount + '</span>';
+  }
   var pendingBar =
     '<div class="pending-bar">' +
       '<button class="pending-btn' + (state.showPending ? ' active' : '') + '" onclick="togglePending()">' +
@@ -1843,7 +1856,7 @@ function render() {
       '</button>' +
       '<button class="focus-bar-btn' + (state.showFocus ? ' active' : '') + '" onclick="toggleFocusView()">' +
         '&#128204; <span class="pending-btn-label">Today\'s Focus</span>' +
-        (focusCount > 0 ? '<span class="pending-btn-count">' + focusCount + '</span>' : '') +
+        focusBadge +
       '</button>' +
     '</div>';
 
