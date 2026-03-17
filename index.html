@@ -664,6 +664,65 @@
   .sport-settings-btn:hover { border-color: var(--purple); }
   .sport-settings-btn.active { background: var(--purple); border-color: transparent; color: #fff; }
 
+  .backup-btn {
+    width: 44px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.14s;
+    flex-shrink: 0;
+  }
+  .backup-btn:hover { border-color: var(--purple); }
+  .backup-btn.active { background: var(--purple); border-color: transparent; color: #fff; }
+
+  .backup-panel {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 20px rgba(139,95,207,0.1);
+  }
+  .backup-panel h3 { margin: 0 0 12px; font-size: 15px; color: var(--text); }
+  .backup-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .backup-action-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.14s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .backup-action-btn:hover { border-color: var(--purple); color: var(--purple); }
+  .backup-action-btn.primary { background: var(--purple); border-color: transparent; color: #fff; }
+  .backup-action-btn.primary:hover { opacity: 0.88; }
+  .backup-info { font-size: 12px; color: var(--text-dim); margin-top: 4px; text-align: center; }
+  .backup-import-drop {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.14s;
+    margin-top: 4px;
+  }
+  .backup-import-drop:hover { border-color: var(--purple); color: var(--purple); }
+
   .sport-settings-panel {
     background: var(--surface);
     border-radius: 20px;
@@ -1010,7 +1069,8 @@ var state = {
   workoutDone: {},
   exerciseTags: [],
   focusList: [],
-  showFocus: false
+  showFocus: false,
+  showBackup: false
 };
 
 function loadTasks() {
@@ -1686,6 +1746,84 @@ function escAttr(s) {
   return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+/* ── backup / export / import ── */
+function toggleBackupPanel() {
+  state.showBackup = !state.showBackup;
+  render();
+}
+function exportBackup() {
+  var data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    tasks: state.tasks,
+    focusList: state.focusList,
+    workouts: state.workouts,
+    workoutDone: state.workoutDone,
+    exerciseTags: state.exerciseTags
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var d = new Date();
+  a.href = url;
+  a.download = 'calendar-backup-' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+}
+function importBackupFile() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!data.version || !data.tasks) { alert('Invalid backup file.'); return; }
+        if (!confirm('This will replace ALL current data with the backup. Continue?')) return;
+        state.tasks = data.tasks || {};
+        state.focusList = data.focusList || [];
+        state.workouts = data.workouts || [];
+        state.workoutDone = data.workoutDone || {};
+        state.exerciseTags = data.exerciseTags || [];
+        saveTasks();
+        saveFocusList();
+        saveWorkouts();
+        saveExerciseTags();
+        state.showBackup = false;
+        render();
+        alert('Backup restored successfully!');
+      } catch(err) { alert('Failed to read backup file.'); }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  setTimeout(function() { document.body.removeChild(input); }, 1000);
+}
+function renderBackupPanel() {
+  var taskCount = Object.keys(state.tasks).reduce(function(n, k) { return n + state.tasks[k].length; }, 0);
+  var doneCount = Object.keys(state.tasks).reduce(function(n, k) {
+    return n + state.tasks[k].filter(function(t) { return t.done; }).length;
+  }, 0);
+  var workoutDoneCount = Object.keys(state.workoutDone).reduce(function(n, k) { return n + state.workoutDone[k].length; }, 0);
+  return '<div class="backup-panel">' +
+    '<h3>💾 Backup & Restore</h3>' +
+    '<div class="backup-info" style="margin-bottom:10px;text-align:left;">' +
+      '📋 Tasks: ' + taskCount + ' total (' + doneCount + ' done) &nbsp;|&nbsp; ' +
+      '🏋️ Workouts: ' + state.workouts.length + ' saved, ' + workoutDoneCount + ' sessions logged' +
+    '</div>' +
+    '<div class="backup-row">' +
+      '<button class="backup-action-btn primary" onclick="exportBackup()">⬇️ Export Backup</button>' +
+      '<button class="backup-action-btn" onclick="importBackupFile()">⬆️ Import Backup</button>' +
+    '</div>' +
+    '<div class="backup-info">Export saves all tasks, workouts, checked items, focus list & exercise tags as a .json file.</div>' +
+  '</div>';
+}
+
 function render() {
   var app = document.getElementById("app");
   var firstDay = new Date(state.year, state.month, 1).getDay();
@@ -1887,8 +2025,10 @@ function render() {
         })() +
       '</button>' +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showSportSettings ? ' active' : '') + '" onclick="toggleSportSettings()">⚙️</button>' : '') +
+      '<button class="backup-btn' + (state.showBackup ? ' active' : '') + '" onclick="toggleBackupPanel()" title="Backup & Restore">💾</button>' +
     '</div>' +
     (state.sportMode && state.showSportSettings ? renderSportSettingsPanel() : '') +
+    (state.showBackup ? renderBackupPanel() : '') +
     '<div class="layout">' +
       '<div class="cal-side" ontouchstart="swipeTouchStart(event)" ontouchend="swipeTouchEnd(event)">' +
         '<div class="day-labels">' + dayLabels + '</div>' +
