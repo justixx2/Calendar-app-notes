@@ -1070,7 +1070,9 @@ var state = {
   exerciseTags: [],
   focusList: [],
   showFocus: false,
-  showBackup: false
+  showBackup: false,
+  showHistory: false,
+  workoutCompletedAt: {}
 };
 
 function loadTasks() {
@@ -1118,8 +1120,96 @@ function removeFromFocus(key, id) {
 }
 function toggleFocusView() {
   state.showFocus = !state.showFocus;
-  if (state.showFocus) state.showPending = false;
+  if (state.showFocus) { state.showPending = false; state.showHistory = false; }
   render();
+}
+function toggleHistory() {
+  state.showHistory = !state.showHistory;
+  if (state.showHistory) { state.showPending = false; state.showFocus = false; state.showBackup = false; }
+  render();
+}
+function renderHistoryPanel() {
+  if (state.sportMode) {
+    var byDate = {};
+    var schedKeys = Object.keys(state.workoutDone);
+    for (var i = 0; i < schedKeys.length; i++) {
+      var sKey = schedKeys[i];
+      var doneIds = state.workoutDone[sKey];
+      for (var j = 0; j < doneIds.length; j++) {
+        var wId = doneIds[j];
+        var workout = null;
+        for (var k = 0; k < state.workouts.length; k++) {
+          if (state.workouts[k].id === wId) { workout = state.workouts[k]; break; }
+        }
+        var name = workout ? workout.name : '(deleted workout)';
+        var completedAt = (state.workoutCompletedAt[sKey] && state.workoutCompletedAt[sKey][wId]) || sKey;
+        if (!byDate[completedAt]) byDate[completedAt] = [];
+        byDate[completedAt].push({ schedKey: sKey, name: name });
+      }
+    }
+    var dates = Object.keys(byDate).sort().reverse();
+    if (dates.length === 0) {
+      return '<div class="pending-panel"><div class="pending-empty"><div class="pending-empty-icon">📜</div>No completed workouts yet.</div></div>';
+    }
+    var html = '<div class="pending-panel">';
+    var now = new Date();
+    for (var di = 0; di < dates.length; di++) {
+      var date = dates[di];
+      var dp = date.split('-');
+      var dy = parseInt(dp[0]), dm = parseInt(dp[1])-1, dd = parseInt(dp[2]);
+      var dayAbbr = DAYS_SHORT[new Date(dy, dm, dd).getDay()];
+      var dateStr = dayAbbr + ' \u00b7 ' + MONTHS[dm].slice(0,3) + ' ' + dd + (dy !== now.getFullYear() ? ', ' + dy : '');
+      var items = byDate[date];
+      html += '<div class="pending-group"><div class="pending-date" onclick="goToDate(' + dy + ',' + dm + ',' + dd + ')"><span class="pending-date-label">' + dateStr + '</span><span class="pending-count-badge" style="background:var(--teal)">' + items.length + '</span></div>';
+      for (var ii = 0; ii < items.length; ii++) {
+        var it = items[ii];
+        var fp = it.schedKey.split('-');
+        var fy = parseInt(fp[0]), fm = parseInt(fp[1])-1, fd = parseInt(fp[2]);
+        var fromLabel = it.schedKey !== date ? '<button class="focus-from-btn" onclick="goToDate(' + fy + ',' + fm + ',' + fd + ')">' + MONTHS[fm].slice(0,3) + ' ' + fd + '</button>' : '';
+        html += '<div class="pending-task-item"><div class="check-btn done" style="pointer-events:none;flex-shrink:0">&#10003;</div><span class="pending-task-text">' + escHtml(it.name) + '</span>' + fromLabel + '</div>';
+      }
+      html += '</div>';
+    }
+    return html + '</div>';
+  }
+  var byDate2 = {};
+  var allKeys = Object.keys(state.tasks);
+  for (var ai = 0; ai < allKeys.length; ai++) {
+    var ak = allKeys[ai];
+    var list = state.tasks[ak];
+    for (var aj = 0; aj < list.length; aj++) {
+      var t = list[aj];
+      if (t.done) {
+        var cDate = t.completedDate || ak;
+        if (!byDate2[cDate]) byDate2[cDate] = [];
+        byDate2[cDate].push({ key: ak, task: t });
+      }
+    }
+  }
+  var dates2 = Object.keys(byDate2).sort().reverse();
+  if (dates2.length === 0) {
+    return '<div class="pending-panel"><div class="pending-empty"><div class="pending-empty-icon">📜</div>No completed tasks yet.</div></div>';
+  }
+  var html2 = '<div class="pending-panel">';
+  var now2 = new Date();
+  for (var bi = 0; bi < dates2.length; bi++) {
+    var bDate = dates2[bi];
+    var bp = bDate.split('-');
+    var by = parseInt(bp[0]), bm = parseInt(bp[1])-1, bd = parseInt(bp[2]);
+    var bAbbr = DAYS_SHORT[new Date(by, bm, bd).getDay()];
+    var bStr = bAbbr + ' \u00b7 ' + MONTHS[bm].slice(0,3) + ' ' + bd + (by !== now2.getFullYear() ? ', ' + by : '');
+    var bItems = byDate2[bDate];
+    html2 += '<div class="pending-group"><div class="pending-date" onclick="goToDate(' + by + ',' + bm + ',' + bd + ')"><span class="pending-date-label">' + bStr + '</span><span class="pending-count-badge" style="background:var(--teal)">' + bItems.length + '</span></div>';
+    for (var ci = 0; ci < bItems.length; ci++) {
+      var bit = bItems[ci];
+      var bfp = bit.key.split('-');
+      var bfy = parseInt(bfp[0]), bfm = parseInt(bfp[1])-1, bfd = parseInt(bfp[2]);
+      var bFromLabel = bit.key !== bDate ? '<button class="focus-from-btn" onclick="goToDate(' + bfy + ',' + bfm + ',' + bfd + ')">' + MONTHS[bfm].slice(0,3) + ' ' + bfd + '</button>' : '';
+      html2 += '<div class="pending-task-item"><div class="check-btn done" style="pointer-events:none;flex-shrink:0">&#10003;</div><span class="pending-task-text" style="text-decoration:line-through;color:var(--text-dim)">' + escHtml(bit.task.text) + '</span>' + bFromLabel + '</div>';
+    }
+    html2 += '</div>';
+  }
+  return html2 + '</div>';
 }
 function renderFocusPanel() {
   var validItems = state.focusList.filter(function(fi) {
@@ -1319,12 +1409,13 @@ function loadWorkouts() {
       var data = JSON.parse(saved);
       state.workouts = data.workouts || [];
       state.workoutDone = data.workoutDone || {};
+      state.workoutCompletedAt = data.workoutCompletedAt || {};
     }
   } catch(e) {}
 }
 function saveWorkouts() {
   try {
-    localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone }));
+    localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone, workoutCompletedAt: state.workoutCompletedAt }));
   } catch(e) {}
 }
 function loadExerciseTags() {
@@ -1362,6 +1453,7 @@ function deleteExerciseTag(id) {
 }
 function toggleSportMode() {
   state.sportMode = !state.sportMode;
+  state.showHistory = false;
   if (state.sportMode) {
     document.body.classList.add('sport-mode');
     if (state.workouts.length === 0) state.showSportSettings = true;
@@ -1416,8 +1508,16 @@ function deleteWorkout(id) {
 function toggleWorkoutDone(key, workoutId) {
   if (!state.workoutDone[key]) state.workoutDone[key] = [];
   var idx = state.workoutDone[key].indexOf(workoutId);
-  if (idx === -1) state.workoutDone[key].push(workoutId);
-  else state.workoutDone[key].splice(idx, 1);
+  if (idx === -1) {
+    state.workoutDone[key].push(workoutId);
+    var now = new Date();
+    var todayKey = dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+    if (!state.workoutCompletedAt[key]) state.workoutCompletedAt[key] = {};
+    state.workoutCompletedAt[key][workoutId] = todayKey;
+  } else {
+    state.workoutDone[key].splice(idx, 1);
+    if (state.workoutCompletedAt[key]) delete state.workoutCompletedAt[key][workoutId];
+  }
   if (navigator.vibrate) navigator.vibrate(50);
   saveWorkouts();
   render();
@@ -1654,7 +1754,7 @@ function deleteTask(key, id) {
 
 function togglePending() {
   state.showPending = !state.showPending;
-  if (state.showPending) state.showFocus = false;
+  if (state.showPending) { state.showFocus = false; state.showHistory = false; }
   render();
 }
 
@@ -1749,6 +1849,7 @@ function escAttr(s) {
 /* ── backup / export / import ── */
 function toggleBackupPanel() {
   state.showBackup = !state.showBackup;
+  if (state.showBackup) state.showHistory = false;
   render();
 }
 function exportBackup() {
@@ -1759,6 +1860,7 @@ function exportBackup() {
     focusList: state.focusList,
     workouts: state.workouts,
     workoutDone: state.workoutDone,
+    workoutCompletedAt: state.workoutCompletedAt,
     exerciseTags: state.exerciseTags
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1788,6 +1890,7 @@ function importBackupFile() {
         state.focusList = data.focusList || [];
         state.workouts = data.workouts || [];
         state.workoutDone = data.workoutDone || {};
+        state.workoutCompletedAt = data.workoutCompletedAt || {};
         state.exerciseTags = data.exerciseTags || [];
         saveTasks();
         saveFocusList();
@@ -1997,6 +2100,7 @@ function render() {
         '&#128204; <span class="pending-btn-label">Today\'s Focus</span>' +
         focusBadge +
       '</button>' +
+      '<button class="focus-bar-btn' + (state.showHistory ? ' active' : '') + '" onclick="toggleHistory()">📜 History</button>' +
     '</div>';
 
   app.innerHTML =
@@ -2025,10 +2129,12 @@ function render() {
         })() +
       '</button>' +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showSportSettings ? ' active' : '') + '" onclick="toggleSportSettings()">⚙️</button>' : '') +
+      (state.sportMode ? '<button class="sport-settings-btn' + (state.showHistory ? ' active' : '') + '" onclick="toggleHistory()" title="History">📜</button>' : '') +
       '<button class="backup-btn' + (state.showBackup ? ' active' : '') + '" onclick="toggleBackupPanel()" title="Backup & Restore">💾</button>' +
     '</div>' +
     (state.sportMode && state.showSportSettings ? renderSportSettingsPanel() : '') +
     (state.showBackup ? renderBackupPanel() : '') +
+    (state.showHistory ? renderHistoryPanel() : '') +
     '<div class="layout">' +
       '<div class="cal-side" ontouchstart="swipeTouchStart(event)" ontouchend="swipeTouchEnd(event)">' +
         '<div class="day-labels">' + dayLabels + '</div>' +
