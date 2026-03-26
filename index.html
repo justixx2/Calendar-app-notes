@@ -496,7 +496,8 @@
   .placeholder-panel .sub { font-size: 11px; font-weight: 600; margin-top: 4px; color: var(--text-dim); }
 
   /* ── PENDING PANEL ─────────────────────────────── */
-  .pending-bar { margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+  .pending-bar { margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .pending-bar-sub { display: flex; gap: 8px; }
 
   .pending-btn {
     flex: 1;
@@ -2097,11 +2098,13 @@ function render() {
         '📋 <span class="pending-btn-label">Pending</span>' +
         '<span class="pending-btn-count' + (totalPending === 0 ? ' zero' : '') + '">' + totalPending + '</span>' +
       '</button>' +
-      '<button class="focus-bar-btn' + (state.showFocus ? ' active' : '') + '" onclick="toggleFocusView()">' +
-        '&#128204; <span class="pending-btn-label">Focus</span>' +
-        focusBadge +
-      '</button>' +
-      '<button class="focus-bar-btn' + (state.showHistory ? ' active' : '') + '" onclick="toggleHistory()">📜 History</button>' +
+      '<div class="pending-bar-sub">' +
+        '<button class="focus-bar-btn' + (state.showFocus ? ' active' : '') + '" onclick="toggleFocusView()">' +
+          '&#128204; <span class="pending-btn-label">Today\'s Focus</span>' +
+          focusBadge +
+        '</button>' +
+        '<button class="focus-bar-btn' + (state.showHistory ? ' active' : '') + '" onclick="toggleHistory()">📜 History</button>' +
+      '</div>' +
     '</div>';
 
   app.innerHTML =
