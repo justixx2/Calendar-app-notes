@@ -704,6 +704,57 @@
   .wc-radio:checked + .wc-pick-opt { border-color: var(--text); transform: scale(1.2); }
   .wc-pick-none { background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-dim); font-weight: 900; }
 
+  /* ── exercise management ── */
+  .workout-entry { margin-bottom: 6px; }
+  .workout-ex-btn {
+    background: none; border: 1.5px solid var(--border); border-radius: 20px;
+    font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800;
+    color: var(--text-dim); cursor: pointer; padding: 2px 8px; margin-top: 5px;
+    transition: border-color 0.13s, color 0.13s;
+  }
+  .workout-ex-btn:hover { border-color: var(--purple); color: var(--purple); }
+  .workout-ex-btn.open { border-color: var(--purple); color: var(--purple); background: rgba(139,95,207,0.08); }
+  .workout-ex-section {
+    background: var(--bg); border-radius: 11px; padding: 9px 11px;
+    margin: 0 0 2px; border: 1.5px solid var(--border);
+  }
+  .ex-item {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 0; border-bottom: 1px solid var(--border);
+  }
+  .ex-item:last-of-type { border-bottom: none; }
+  .ex-item-name { flex: 1; font-size: 12px; font-weight: 800; color: var(--text); }
+  .ex-item-sets { font-size: 11px; font-weight: 700; color: var(--text-dim); white-space: nowrap; }
+  .ex-del-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 0 2px; opacity: 0.5; transition: opacity 0.13s; }
+  .ex-del-btn:hover { opacity: 1; color: var(--coral); }
+  .add-ex-row { display: flex; gap: 5px; align-items: center; margin-top: 7px; flex-wrap: wrap; }
+  .ex-name-input { flex: 1; min-width: 90px; }
+  .ex-reps-input { width: 52px !important; }
+  .ex-sets-input { width: 44px; }
+  /* exercises in day panel */
+  .exercise-list { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+  .ex-day-item { display: flex; align-items: center; gap: 7px; padding: 3px 0; }
+  .ex-check-btn {
+    width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border);
+    background: transparent; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: #fff; font-weight: 900; transition: all 0.13s;
+  }
+  .ex-check-btn:hover { border-color: var(--teal); }
+  .ex-check-btn.done { border: none; background: var(--teal); box-shadow: 0 1px 4px rgba(6,214,160,0.35); }
+  .ex-day-name { flex: 1; font-size: 12px; font-weight: 700; color: var(--text); }
+  .ex-day-name.done { text-decoration: line-through; color: var(--text-dim); }
+  .ex-sets-badge {
+    font-size: 10px; font-weight: 800; color: var(--text-dim);
+    background: var(--border); border-radius: 20px; padding: 1px 6px; white-space: nowrap; flex-shrink: 0;
+  }
+  .ex-progress-badge {
+    font-size: 10px; font-weight: 900; border-radius: 20px; padding: 1px 7px; flex-shrink: 0; white-space: nowrap;
+  }
+  .ex-progress-badge.done { background: var(--teal); color: #fff; }
+  .ex-progress-badge.partial { background: var(--yellow); color: var(--text); }
+  .ex-progress-badge.none { background: var(--border); color: var(--text-dim); }
+
   .backup-panel {
     background: var(--surface);
     border-radius: 20px;
@@ -1096,7 +1147,9 @@ var state = {
   showFocus: false,
   showBackup: false,
   showHistory: false,
-  workoutCompletedAt: {}
+  workoutCompletedAt: {},
+  exerciseDone: {},
+  expandedWorkout: null
 };
 
 function loadTasks() {
@@ -1434,12 +1487,13 @@ function loadWorkouts() {
       state.workouts = data.workouts || [];
       state.workoutDone = data.workoutDone || {};
       state.workoutCompletedAt = data.workoutCompletedAt || {};
+      state.exerciseDone = data.exerciseDone || {};
     }
   } catch(e) {}
 }
 function saveWorkouts() {
   try {
-    localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone, workoutCompletedAt: state.workoutCompletedAt }));
+    localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone, workoutCompletedAt: state.workoutCompletedAt, exerciseDone: state.exerciseDone }));
   } catch(e) {}
 }
 function loadExerciseTags() {
@@ -1538,6 +1592,70 @@ function setWorkoutColor(id, color) {
   saveWorkouts();
   render();
 }
+function toggleWorkoutExpand(id) {
+  state.expandedWorkout = state.expandedWorkout === id ? null : id;
+  render();
+}
+function addExerciseToWorkout(workoutId) {
+  var nameEl = document.getElementById('exn_' + workoutId);
+  var setsEl = document.getElementById('exs_' + workoutId);
+  var repsEl = document.getElementById('exr_' + workoutId);
+  var name = nameEl ? nameEl.value.trim() : '';
+  if (!name) return;
+  var sets = setsEl ? (parseInt(setsEl.value) || 3) : 3;
+  var reps = repsEl ? (repsEl.value.trim() || '10') : '10';
+  for (var i = 0; i < state.workouts.length; i++) {
+    if (state.workouts[i].id === workoutId) {
+      if (!state.workouts[i].exercises) state.workouts[i].exercises = [];
+      state.workouts[i].exercises.push({ id: Date.now(), name: name, sets: sets, reps: reps });
+      break;
+    }
+  }
+  saveWorkouts();
+  render();
+  setTimeout(function() { var el = document.getElementById('exn_' + workoutId); if (el) el.focus(); }, 30);
+}
+function removeExerciseFromWorkout(workoutId, exerciseId) {
+  for (var i = 0; i < state.workouts.length; i++) {
+    if (state.workouts[i].id === workoutId) {
+      state.workouts[i].exercises = (state.workouts[i].exercises || []).filter(function(e) { return e.id !== exerciseId; });
+      break;
+    }
+  }
+  saveWorkouts();
+  render();
+}
+function toggleExerciseDone(dayKey, workoutId, exerciseId) {
+  if (!state.exerciseDone[dayKey]) state.exerciseDone[dayKey] = {};
+  if (!state.exerciseDone[dayKey][workoutId]) state.exerciseDone[dayKey][workoutId] = [];
+  var list = state.exerciseDone[dayKey][workoutId];
+  var idx = list.indexOf(exerciseId);
+  if (idx === -1) {
+    list.push(exerciseId);
+    var workout = null;
+    for (var i = 0; i < state.workouts.length; i++) { if (state.workouts[i].id === workoutId) { workout = state.workouts[i]; break; } }
+    if (workout && workout.exercises && workout.exercises.length > 0 && list.length === workout.exercises.length) {
+      if (!state.workoutDone[dayKey]) state.workoutDone[dayKey] = [];
+      if (state.workoutDone[dayKey].indexOf(workoutId) === -1) {
+        state.workoutDone[dayKey].push(workoutId);
+        var now = new Date();
+        var todayKey = dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+        if (!state.workoutCompletedAt[dayKey]) state.workoutCompletedAt[dayKey] = {};
+        state.workoutCompletedAt[dayKey][workoutId] = todayKey;
+      }
+    }
+  } else {
+    list.splice(idx, 1);
+    if (state.workoutDone[dayKey]) {
+      var wi = state.workoutDone[dayKey].indexOf(workoutId);
+      if (wi !== -1) state.workoutDone[dayKey].splice(wi, 1);
+      if (state.workoutCompletedAt[dayKey]) delete state.workoutCompletedAt[dayKey][workoutId];
+    }
+  }
+  if (navigator.vibrate) navigator.vibrate(30);
+  saveWorkouts();
+  render();
+}
 function toggleWorkoutDone(key, workoutId) {
   if (!state.workoutDone[key]) state.workoutDone[key] = [];
   var idx = state.workoutDone[key].indexOf(workoutId);
@@ -1633,13 +1751,40 @@ function renderSportDayPanel() {
           if (exTag) tagLinks += '<a class="ex-tag-link" href="' + escAttr(exTag.url) + '" target="_blank" rel="noopener">' + escHtml(exTag.name) + '</a>';
         }
       }
+      var swExs = sw.exercises || [];
+      var exDoneArr = (state.exerciseDone[sKey] && state.exerciseDone[sKey][sw.id]) ? state.exerciseDone[sKey][sw.id] : [];
+      var exDoneCount = 0;
+      for (var edc = 0; edc < swExs.length; edc++) { if (exDoneArr.indexOf(swExs[edc].id) !== -1) exDoneCount++; }
+      var exProgressHtml = '';
+      if (swExs.length > 0) {
+        var epCls = exDoneCount === swExs.length ? 'done' : (exDoneCount > 0 ? 'partial' : 'none');
+        exProgressHtml = '<span class="ex-progress-badge ' + epCls + '">' + exDoneCount + '/' + swExs.length + '</span>';
+      }
+      var exListHtml = '';
+      if (swExs.length > 0) {
+        exListHtml = '<div class="exercise-list">';
+        for (var eli = 0; eli < swExs.length; eli++) {
+          var sex = swExs[eli];
+          var exIsDone = exDoneArr.indexOf(sex.id) !== -1;
+          exListHtml += '<div class="ex-day-item">' +
+            '<button class="ex-check-btn ' + (exIsDone ? 'done' : '') + '" onclick="toggleExerciseDone(\'' + sKey + '\',' + sw.id + ',' + sex.id + ')">' + (exIsDone ? '&#10003;' : '') + '</button>' +
+            '<span class="ex-day-name' + (exIsDone ? ' done' : '') + '">' + escHtml(sex.name) + '</span>' +
+            '<span class="ex-sets-badge">' + sex.sets + '×' + escHtml(String(sex.reps)) + '</span>' +
+          '</div>';
+        }
+        exListHtml += '</div>';
+      }
       items +=
         '<div class="' + cls + '"' + itemStyle + '>' +
           '<button class="check-btn ' + (isDone ? 'done' : '') + '" onclick="toggleWorkoutDone(\'' + sKey + '\',' + sw.id + ')">' +
             (isDone ? '&#10003;' : '') + '</button>' +
           '<div class="workout-cell">' +
-            '<span class="task-text ' + (isDone ? 'done' : '') + '">' + escHtml(sw.name) + '</span>' +
+            '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+              '<span class="task-text ' + (isDone ? 'done' : '') + '" style="flex:1">' + escHtml(sw.name) + '</span>' +
+              exProgressHtml +
+            '</div>' +
             (tagLinks ? '<div class="ex-tag-row">' + tagLinks + '</div>' : '') +
+            exListHtml +
           '</div>' +
           (sw.type === 'once' ? '<button class="once-del-btn" onclick="deleteWorkout(' + sw.id + ')" title="Remove">&#215;</button>' : '') +
         '</div>';
@@ -1726,15 +1871,42 @@ function renderSportSettingsPanel() {
       }
       rwColorDots += '</div>';
       var rwLeftBar = rw.color ? ' style="border-left:3px solid ' + rw.color + '"' : '';
-      html += '<div class="workout-row"' + rwLeftBar + '>' +
-        '<div class="workout-name-col">' +
-          '<span class="workout-name">' + escHtml(rw.name) + '</span>' +
-          (rwTagPills ? '<div class="ex-tag-row-static">' + rwTagPills + '</div>' : '') +
-          rwColorDots +
+      var rwExs = rw.exercises || [];
+      var rwExBtn = '<button class="workout-ex-btn' + (state.expandedWorkout === rw.id ? ' open' : '') + '" onclick="toggleWorkoutExpand(' + rw.id + ')">' +
+        (rwExs.length > 0 ? '🏋 ' + rwExs.length + ' exercise' + (rwExs.length !== 1 ? 's' : '') : '+ Exercises') +
+        (state.expandedWorkout === rw.id ? ' ▴' : ' ▾') +
+      '</button>';
+      html += '<div class="workout-entry">' +
+        '<div class="workout-row"' + rwLeftBar + '>' +
+          '<div class="workout-name-col">' +
+            '<span class="workout-name">' + escHtml(rw.name) + '</span>' +
+            (rwTagPills ? '<div class="ex-tag-row-static">' + rwTagPills + '</div>' : '') +
+            rwExBtn +
+            rwColorDots +
+          '</div>' +
+          schedBadge +
+          '<button class="workout-del" onclick="deleteWorkout(' + rw.id + ')">&#215;</button>' +
+        '</div>';
+      if (state.expandedWorkout === rw.id) {
+        html += '<div class="workout-ex-section">';
+        for (var exi = 0; exi < rwExs.length; exi++) {
+          var rex = rwExs[exi];
+          html += '<div class="ex-item">' +
+            '<span class="ex-item-name">' + escHtml(rex.name) + '</span>' +
+            '<span class="ex-item-sets">' + rex.sets + ' × ' + escHtml(String(rex.reps)) + '</span>' +
+            '<button class="ex-del-btn" onclick="removeExerciseFromWorkout(' + rw.id + ',' + rex.id + ')">&#215;</button>' +
+          '</div>';
+        }
+        html += '<div class="add-ex-row">' +
+          '<input id="exn_' + rw.id + '" class="task-input ex-name-input" placeholder="Exercise name" onkeydown="if(event.key===\'Enter\')document.getElementById(\'exs_' + rw.id + '\').focus()">' +
+          '<input id="exs_' + rw.id + '" type="number" class="interval-input ex-sets-input" value="3" min="1" max="99" title="Sets">' +
+          '<span class="interval-label" style="font-size:13px">×</span>' +
+          '<input id="exr_' + rw.id + '" class="task-input ex-reps-input" placeholder="10" onkeydown="if(event.key===\'Enter\')addExerciseToWorkout(' + rw.id + ')" title="Reps">' +
+          '<button class="once-confirm-btn" onclick="addExerciseToWorkout(' + rw.id + ')">Add</button>' +
         '</div>' +
-        schedBadge +
-        '<button class="workout-del" onclick="deleteWorkout(' + rw.id + ')">&#215;</button>' +
-      '</div>';
+        '</div>';
+      }
+      html += '</div>';
     }
     html += '</div>';
   } else {
@@ -1928,6 +2100,7 @@ function exportBackup() {
     workouts: state.workouts,
     workoutDone: state.workoutDone,
     workoutCompletedAt: state.workoutCompletedAt,
+    exerciseDone: state.exerciseDone,
     exerciseTags: state.exerciseTags
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1958,6 +2131,7 @@ function importBackupFile() {
         state.workouts = data.workouts || [];
         state.workoutDone = data.workoutDone || {};
         state.workoutCompletedAt = data.workoutCompletedAt || {};
+        state.exerciseDone = data.exerciseDone || {};
         state.exerciseTags = data.exerciseTags || [];
         saveTasks();
         saveFocusList();
