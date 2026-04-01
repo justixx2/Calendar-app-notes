@@ -755,6 +755,31 @@
   .ex-progress-badge.partial { background: var(--yellow); color: var(--text); }
   .ex-progress-badge.none { background: var(--border); color: var(--text-dim); }
 
+  /* ── daily accessories ── */
+  .daily-divider {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text-dim); margin: 10px 0 6px;
+  }
+  .daily-divider::before, .daily-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .daily-settings-section {
+    border-top: 2px solid var(--border); margin-top: 12px; padding-top: 12px;
+  }
+  .daily-settings-header {
+    font-size: 13px; font-weight: 900; color: var(--text); margin-bottom: 3px;
+  }
+  .daily-settings-desc {
+    font-size: 11px; color: var(--text-dim); font-weight: 600; margin-bottom: 8px;
+  }
+  .daily-acc-item {
+    display: flex; align-items: center; gap: 7px;
+    padding: 5px 0; border-bottom: 1px solid var(--border);
+  }
+  .daily-acc-item:last-of-type { border-bottom: none; }
+  .daily-acc-name { flex: 1; font-size: 12px; font-weight: 800; color: var(--text); }
+
   .backup-panel {
     background: var(--surface);
     border-radius: 20px;
@@ -1149,7 +1174,9 @@ var state = {
   showHistory: false,
   workoutCompletedAt: {},
   exerciseDone: {},
-  expandedWorkout: null
+  expandedWorkout: null,
+  dailyAccessories: [],
+  accessoryDone: {}
 };
 
 function loadTasks() {
@@ -1488,12 +1515,14 @@ function loadWorkouts() {
       state.workoutDone = data.workoutDone || {};
       state.workoutCompletedAt = data.workoutCompletedAt || {};
       state.exerciseDone = data.exerciseDone || {};
+      state.dailyAccessories = data.dailyAccessories || [];
+      state.accessoryDone = data.accessoryDone || {};
     }
   } catch(e) {}
 }
 function saveWorkouts() {
   try {
-    localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone, workoutCompletedAt: state.workoutCompletedAt, exerciseDone: state.exerciseDone }));
+    localStorage.setItem("sport-workouts", JSON.stringify({ workouts: state.workouts, workoutDone: state.workoutDone, workoutCompletedAt: state.workoutCompletedAt, exerciseDone: state.exerciseDone, dailyAccessories: state.dailyAccessories, accessoryDone: state.accessoryDone }));
   } catch(e) {}
 }
 function loadExerciseTags() {
@@ -1692,6 +1721,32 @@ function toggleSchedType(type) {
   if (ws) ws.style.display = type === 'weekly' ? '' : 'none';
   if (is) is.style.display = type === 'interval' ? '' : 'none';
 }
+/* ── daily accessories ── */
+function addDailyAccessory() {
+  var el = document.getElementById('dailyAccInput');
+  var name = el ? el.value.trim() : '';
+  if (!name) return;
+  state.dailyAccessories.push({ id: Date.now(), name: name });
+  saveWorkouts();
+  el.value = '';
+  render();
+  setTimeout(function() { var e = document.getElementById('dailyAccInput'); if (e) e.focus(); }, 30);
+}
+function removeDailyAccessory(id) {
+  state.dailyAccessories = state.dailyAccessories.filter(function(a) { return a.id !== id; });
+  saveWorkouts();
+  render();
+}
+function toggleAccessoryDone(dayKey, id) {
+  if (!state.accessoryDone[dayKey]) state.accessoryDone[dayKey] = [];
+  var list = state.accessoryDone[dayKey];
+  var idx = list.indexOf(id);
+  if (idx === -1) list.push(id); else list.splice(idx, 1);
+  if (navigator.vibrate) navigator.vibrate(30);
+  saveWorkouts();
+  render();
+}
+
 function toggleOnceForm() {
   state.showOnceForm = !state.showOnceForm;
   render();
@@ -1834,6 +1889,20 @@ function renderSportDayPanel() {
     '</div>' +
     items +
     onceForm +
+    (function() {
+      if (state.dailyAccessories.length === 0) return '';
+      var accDone = state.accessoryDone[sKey] || [];
+      var accHtml = '<div class="daily-divider">Daily</div><div class="task-list">';
+      for (var ai = 0; ai < state.dailyAccessories.length; ai++) {
+        var acc = state.dailyAccessories[ai];
+        var accIsDone = accDone.indexOf(acc.id) !== -1;
+        accHtml += '<div class="task-item' + (accIsDone ? ' task-done-item' : '') + '" style="border-left-color:var(--text-dim)">' +
+          '<button class="check-btn ' + (accIsDone ? 'done' : '') + '" onclick="toggleAccessoryDone(\'' + sKey + '\',' + acc.id + ')">' + (accIsDone ? '&#10003;' : '') + '</button>' +
+          '<span class="task-text ' + (accIsDone ? 'done' : '') + '">' + escHtml(acc.name) + '</span>' +
+        '</div>';
+      }
+      return accHtml + '</div>';
+    })() +
   '</div>';
 }
 function renderSportSettingsPanel() {
@@ -1976,6 +2045,24 @@ function renderSportSettingsPanel() {
         '<input id="exTagUrl" class="task-input" type="url" placeholder="URL (YouTube, TikTok...)" onkeydown="if(event.key===\'Enter\')addExerciseTag()">' +
         '<button class="add-workout-btn" onclick="addExerciseTag()">+ Add Link</button>' +
       '</div>' +
+    '</div>' +
+    '<div class="daily-settings-section">' +
+      '<div class="daily-settings-header">📅 Daily Accessories</div>' +
+      '<div class="daily-settings-desc">Every day · separate from workouts</div>' +
+      (state.dailyAccessories.length > 0
+        ? '<div class="workout-list" style="margin-bottom:8px">' +
+            state.dailyAccessories.map(function(a) {
+              return '<div class="daily-acc-item">' +
+                '<span class="daily-acc-name">' + escHtml(a.name) + '</span>' +
+                '<button class="ex-del-btn" onclick="removeDailyAccessory(' + a.id + ')">&#215;</button>' +
+              '</div>';
+            }).join('') +
+          '</div>'
+        : '<div class="workout-empty" style="margin-bottom:8px">No daily accessories yet</div>') +
+      '<div class="add-ex-row">' +
+        '<input id="dailyAccInput" class="task-input" style="flex:1" placeholder="e.g. Scalp massage, Tongue circles..." onkeydown="if(event.key===\'Enter\')addDailyAccessory()">' +
+        '<button class="once-confirm-btn" onclick="addDailyAccessory()">Add</button>' +
+      '</div>' +
     '</div>';
   html += '</div>';
   return html;
@@ -2101,6 +2188,8 @@ function exportBackup() {
     workoutDone: state.workoutDone,
     workoutCompletedAt: state.workoutCompletedAt,
     exerciseDone: state.exerciseDone,
+    dailyAccessories: state.dailyAccessories,
+    accessoryDone: state.accessoryDone,
     exerciseTags: state.exerciseTags
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -2132,6 +2221,8 @@ function importBackupFile() {
         state.workoutDone = data.workoutDone || {};
         state.workoutCompletedAt = data.workoutCompletedAt || {};
         state.exerciseDone = data.exerciseDone || {};
+        state.dailyAccessories = data.dailyAccessories || [];
+        state.accessoryDone = data.accessoryDone || {};
         state.exerciseTags = data.exerciseTags || [];
         saveTasks();
         saveFocusList();
