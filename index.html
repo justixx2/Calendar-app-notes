@@ -730,7 +730,7 @@
   .add-ex-row { display: flex; gap: 5px; align-items: center; margin-top: 7px; flex-wrap: wrap; }
   .ex-name-input { flex: 1; min-width: 90px; }
   .ex-reps-input { width: 52px !important; }
-  .ex-sets-input { width: 44px; }
+  .ex-sets-input { width: 54px !important; }
   /* exercises in day panel */
   .exercise-list { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
   .ex-day-item { display: flex; align-items: center; gap: 7px; padding: 3px 0; }
@@ -1602,7 +1602,7 @@ function addExerciseToWorkout(workoutId) {
   var repsEl = document.getElementById('exr_' + workoutId);
   var name = nameEl ? nameEl.value.trim() : '';
   if (!name) return;
-  var sets = setsEl ? (parseInt(setsEl.value) || 3) : 3;
+  var sets = setsEl ? (setsEl.value.trim() || '3') : '3';
   var reps = repsEl ? (repsEl.value.trim() || '10') : '10';
   for (var i = 0; i < state.workouts.length; i++) {
     if (state.workouts[i].id === workoutId) {
@@ -1899,7 +1899,7 @@ function renderSportSettingsPanel() {
         }
         html += '<div class="add-ex-row">' +
           '<input id="exn_' + rw.id + '" class="task-input ex-name-input" placeholder="Exercise name" onkeydown="if(event.key===\'Enter\')document.getElementById(\'exs_' + rw.id + '\').focus()">' +
-          '<input id="exs_' + rw.id + '" type="number" class="interval-input ex-sets-input" value="3" min="1" max="99" title="Sets">' +
+          '<input id="exs_' + rw.id + '" type="text" class="task-input ex-sets-input" placeholder="3" title="Sets (e.g. 3 or 2-3)">' +
           '<span class="interval-label" style="font-size:13px">×</span>' +
           '<input id="exr_' + rw.id + '" class="task-input ex-reps-input" placeholder="10" onkeydown="if(event.key===\'Enter\')addExerciseToWorkout(' + rw.id + ')" title="Reps">' +
           '<button class="once-confirm-btn" onclick="addExerciseToWorkout(' + rw.id + ')">Add</button>' +
