@@ -2450,13 +2450,22 @@ function render() {
         (function() {
           if (state.sportMode) return '';
           var n = new Date();
-          var todayWs = state.workouts.filter(function(w) { return isWorkoutScheduledForDay(w, n.getFullYear(), n.getMonth(), n.getDate()); });
-          if (todayWs.length === 0) return '';
           var todayKey = dateKey(n.getFullYear(), n.getMonth(), n.getDate());
-          var doneList = state.workoutDone[todayKey] || [];
-          var done = todayWs.filter(function(w) { return doneList.indexOf(w.id) !== -1; }).length;
-          var cls = done === todayWs.length ? 'task-count-badge all-done' : (done > 0 ? 'task-count-badge some-done' : 'task-count-badge none-done');
-          return '<span class="' + cls + '">' + done + '/' + todayWs.length + '</span>';
+          var result = '';
+          var todayWs = state.workouts.filter(function(w) { return isWorkoutScheduledForDay(w, n.getFullYear(), n.getMonth(), n.getDate()); });
+          if (todayWs.length > 0) {
+            var doneList = state.workoutDone[todayKey] || [];
+            var done = todayWs.filter(function(w) { return doneList.indexOf(w.id) !== -1; }).length;
+            var cls = done === todayWs.length ? 'task-count-badge all-done' : (done > 0 ? 'task-count-badge some-done' : 'task-count-badge none-done');
+            result += '<span class="' + cls + '">' + done + '/' + todayWs.length + '</span>';
+          }
+          if (state.dailyAccessories.length > 0) {
+            var accDone = (state.accessoryDone[todayKey] || []).length;
+            var total = state.dailyAccessories.length;
+            var aCls = accDone === total ? 'task-count-badge all-done' : (accDone > 0 ? 'task-count-badge some-done' : 'task-count-badge zero');
+            result += '<span class="' + aCls + '" title="Daily accessories">' + accDone + '/' + total + '</span>';
+          }
+          return result;
         })() +
       '</button>' +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showSportSettings ? ' active' : '') + '" onclick="toggleSportSettings()">⚙️</button>' : '') +
