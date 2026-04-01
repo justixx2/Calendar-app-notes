@@ -682,6 +682,28 @@
   .backup-btn:hover { border-color: var(--purple); }
   .backup-btn.active { background: var(--purple); border-color: transparent; color: #fff; }
 
+  /* ── workout color picker ── */
+  .workout-color-row { display: flex; gap: 5px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
+  .wc-opt {
+    width: 20px; height: 20px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+    border: 2.5px solid transparent; transition: transform 0.13s, border-color 0.13s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wc-opt:hover { transform: scale(1.18); }
+  .wc-opt.wc-none { background: var(--border); color: var(--text-dim); font-size: 10px; font-weight: 900; }
+  .wc-opt.wc-active { border-color: var(--text); transform: scale(1.22); }
+  .wc-pick-section { margin: 8px 0 4px; }
+  .wc-pick-label { font-size: 11px; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .wc-pick-row { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+  .wc-radio { display: none; }
+  .wc-pick-opt {
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+    border: 3px solid transparent; transition: transform 0.13s, border-color 0.13s; display: block;
+  }
+  .wc-pick-opt:hover { transform: scale(1.15); }
+  .wc-radio:checked + .wc-pick-opt { border-color: var(--text); transform: scale(1.2); }
+  .wc-pick-none { background: var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-dim); font-weight: 900; }
+
   .backup-panel {
     background: var(--surface);
     border-radius: 20px;
@@ -1055,6 +1077,7 @@ if ("serviceWorker" in navigator) {
 var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 var DAYS_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 var DAYS_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var WORKOUT_COLORS = ['#FF6B6B','#FF9500','#FFD166','#06D6A0','#5B7FFF','#C77DFF'];
 
 var state = {
   year: new Date().getFullYear(),
@@ -1497,12 +1520,21 @@ function addWorkout() {
     if (tcb && tcb.checked) tagIds.push(state.exerciseTags[ti].id);
   }
   workout.tagIds = tagIds;
+  var colorRadio = document.querySelector('input[name="wcolor"]:checked');
+  workout.color = (colorRadio && colorRadio.value) ? colorRadio.value : null;
   state.workouts.push(workout);
   saveWorkouts();
   render();
 }
 function deleteWorkout(id) {
   state.workouts = state.workouts.filter(function(w) { return w.id !== id; });
+  saveWorkouts();
+  render();
+}
+function setWorkoutColor(id, color) {
+  for (var i = 0; i < state.workouts.length; i++) {
+    if (state.workouts[i].id === id) { state.workouts[i].color = color || null; break; }
+  }
   saveWorkouts();
   render();
 }
@@ -1588,6 +1620,7 @@ function renderSportDayPanel() {
       var sw = dayWorkouts[si];
       var isDone = doneList.indexOf(sw.id) !== -1;
       var cls = "task-item" + (isDone ? " task-done-item" : "");
+      var itemStyle = sw.color ? ' style="border-left-color:' + sw.color + (isDone ? ';opacity:0.75' : '') + '"' : '';
       var tagLinks = '';
       if (sw.tagIds && sw.tagIds.length > 0) {
         for (var ti2 = 0; ti2 < sw.tagIds.length; ti2++) {
@@ -1599,7 +1632,7 @@ function renderSportDayPanel() {
         }
       }
       items +=
-        '<div class="' + cls + '">' +
+        '<div class="' + cls + '"' + itemStyle + '>' +
           '<button class="check-btn ' + (isDone ? 'done' : '') + '" onclick="toggleWorkoutDone(\'' + sKey + '\',' + sw.id + ')">' +
             (isDone ? '&#10003;' : '') + '</button>' +
           '<div class="workout-cell">' +
@@ -1672,10 +1705,18 @@ function renderSportSettingsPanel() {
           if (wtag) rwTagPills += '<span class="ex-tag-static">' + escHtml(wtag.name) + '</span>';
         }
       }
-      html += '<div class="workout-row">' +
+      var rwColorDots = '<div class="workout-color-row">';
+      rwColorDots += '<div class="wc-opt wc-none' + (!rw.color ? ' wc-active' : '') + '" onclick="setWorkoutColor(' + rw.id + ',null)" title="No color">&#215;</div>';
+      for (var ci = 0; ci < WORKOUT_COLORS.length; ci++) {
+        rwColorDots += '<div class="wc-opt' + (rw.color === WORKOUT_COLORS[ci] ? ' wc-active' : '') + '" style="background:' + WORKOUT_COLORS[ci] + '" onclick="setWorkoutColor(' + rw.id + ',\'' + WORKOUT_COLORS[ci] + '\')" title="Set color"></div>';
+      }
+      rwColorDots += '</div>';
+      var rwLeftBar = rw.color ? ' style="border-left:3px solid ' + rw.color + '"' : '';
+      html += '<div class="workout-row"' + rwLeftBar + '>' +
         '<div class="workout-name-col">' +
           '<span class="workout-name">' + escHtml(rw.name) + '</span>' +
           (rwTagPills ? '<div class="ex-tag-row-static">' + rwTagPills + '</div>' : '') +
+          rwColorDots +
         '</div>' +
         schedBadge +
         '<button class="workout-del" onclick="deleteWorkout(' + rw.id + ')">&#215;</button>' +
@@ -1715,6 +1756,17 @@ function renderSportSettingsPanel() {
             '</div>' +
           '</div>'
         : '') +
+      '<div class="wc-pick-section">' +
+        '<div class="wc-pick-label">Color highlight</div>' +
+        '<div class="wc-pick-row">' +
+          '<input type="radio" name="wcolor" id="wc_none" class="wc-radio" value="" checked>' +
+          '<label for="wc_none" class="wc-pick-opt wc-pick-none" title="No color">&#215;</label>' +
+          WORKOUT_COLORS.map(function(c, ci) {
+            return '<input type="radio" name="wcolor" id="wc_' + ci + '" class="wc-radio" value="' + c + '">' +
+                   '<label for="wc_' + ci + '" class="wc-pick-opt" style="background:' + c + '"></label>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
       '<button class="add-workout-btn" onclick="addWorkout()">+ Add Workout</button>' +
     '</div>' +
     '<div class="ex-library">' +
@@ -1942,17 +1994,19 @@ function render() {
 
   for (var d = 1; d <= daysInMonth; d++) {
     var key = dateKey(state.year, state.month, d);
-    var dotColor = "";
+    var dotsHtml = "";
 
     if (state.sportMode) {
-      var dow = new Date(state.year, state.month, d).getDay();
       var dayWs = state.workouts.filter(function(ws) { return isWorkoutScheduledForDay(ws, state.year, state.month, d); });
       if (dayWs.length > 0) {
         var wDone = state.workoutDone[key] || [];
-        var wDoneCount = dayWs.filter(function(ws) { return wDone.indexOf(ws.id) !== -1; }).length;
-        if (wDoneCount === dayWs.length) dotColor = "var(--teal)";
-        else if (wDoneCount > 0) dotColor = "var(--yellow)";
-        else dotColor = "var(--purple)";
+        for (var wi = 0; wi < dayWs.length && wi < 4; wi++) {
+          var ws = dayWs[wi];
+          var wIsDone = wDone.indexOf(ws.id) !== -1;
+          var dc = ws.color ? ws.color : (wIsDone ? 'var(--teal)' : 'var(--purple)');
+          var op = (ws.color && !wIsDone) ? '0.35' : '1';
+          dotsHtml += '<div class="dot" style="background:' + dc + ';opacity:' + op + '"></div>';
+        }
       }
     } else {
       var list = state.tasks[key] || [];
@@ -1960,9 +2014,9 @@ function render() {
       var doneCount = 0;
       for (var j = 0; j < list.length; j++) { if (list[j].done) doneCount++; }
       if (count > 0) {
-        if (doneCount === count) dotColor = "var(--teal)";
-        else if (doneCount > 0) dotColor = "var(--yellow)";
-        else dotColor = "var(--coral)";
+        if (doneCount === count) dotsHtml = '<div class="dot" style="background:var(--teal)"></div>';
+        else if (doneCount > 0) dotsHtml = '<div class="dot" style="background:var(--yellow)"></div>';
+        else dotsHtml = '<div class="dot" style="background:var(--coral)"></div>';
       }
     }
 
@@ -1972,7 +2026,7 @@ function render() {
 
     calCells += '<div class="' + cls + '" onclick="selectDate(' + d + ')">' +
       d +
-      '<div class="dot-row">' + (dotColor ? '<div class="dot" style="background:' + dotColor + '"></div>' : '') + '</div>' +
+      '<div class="dot-row">' + dotsHtml + '</div>' +
       '</div>';
   }
 
