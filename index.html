@@ -405,15 +405,15 @@
 
   /* ── focus bar button (in pending-bar) ── */
   .focus-bar-btn {
-    display: flex; align-items: center; gap: 5px;
-    background: none; border: none;
-    color: var(--text-dim); font-size: 13px; font-weight: 700;
-    padding: 6px 10px; border-radius: 10px; cursor: pointer;
-    transition: background 0.13s, color 0.13s;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    background: var(--surface); border: 2px solid var(--border);
+    color: var(--text-dim); font-size: 16px; font-weight: 900;
+    padding: 8px 12px; border-radius: 14px; cursor: pointer;
+    transition: all 0.14s; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(91,127,255,0.08);
   }
-  .focus-bar-btn:hover { background: var(--border); color: var(--text); }
-  .focus-bar-btn.active { background: var(--blue); color: #fff; }
+  .focus-bar-btn:hover { border-color: var(--blue); }
+  .focus-bar-btn.active { background: var(--blue); border-color: transparent; color: #fff; box-shadow: 0 4px 16px rgba(91,127,255,0.35); }
   .focus-bar-btn.active .pending-btn-count { background: rgba(255,255,255,0.25); color: #fff; }
 
   /* ── focus panel ── */
