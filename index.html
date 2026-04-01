@@ -207,10 +207,10 @@
   }
   .cal-cell.empty:hover { transform: none; border-color: transparent; box-shadow: none; }
 
-  .dot-row { display: flex; gap: 2px; height: 5px; }
+  .dot-row { display: flex; gap: 1.5px; height: 4px; flex-wrap: wrap; max-width: 100%; }
   .dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
   }
   .cal-cell.selected .dot,
@@ -1588,7 +1588,9 @@ function addOnceWorkout(dateStr) {
     var tcb = document.getElementById('oncetag_' + state.exerciseTags[ti].id);
     if (tcb && tcb.checked) tagIds.push(state.exerciseTags[ti].id);
   }
-  state.workouts.push({ id: Date.now(), name: name, type: 'once', date: dateStr, tagIds: tagIds });
+  var ocColorRadio = document.querySelector('input[name="occolor"]:checked');
+  var ocColor = (ocColorRadio && ocColorRadio.value) ? ocColorRadio.value : null;
+  state.workouts.push({ id: Date.now(), name: name, type: 'once', date: dateStr, tagIds: tagIds, color: ocColor });
   state.showOnceForm = false;
   saveWorkouts();
   render();
@@ -1654,11 +1656,23 @@ function renderSportDayPanel() {
       '<div class="tag-picker-pills">' + oncePills + '</div>' +
     '</div>';
   }
+  var onceColorPicker = '<div class="wc-pick-section">' +
+    '<div class="wc-pick-label">Color highlight</div>' +
+    '<div class="wc-pick-row">' +
+      '<input type="radio" name="occolor" id="occ_none" class="wc-radio" value="" checked>' +
+      '<label for="occ_none" class="wc-pick-opt wc-pick-none" title="No color">&#215;</label>' +
+      WORKOUT_COLORS.map(function(c, ci) {
+        return '<input type="radio" name="occolor" id="occ_' + ci + '" class="wc-radio" value="' + c + '">' +
+               '<label for="occ_' + ci + '" class="wc-pick-opt" style="background:' + c + '"></label>';
+      }).join('') +
+    '</div>' +
+  '</div>';
   var onceForm = state.showOnceForm
     ? '<div class="once-form">' +
         '<input id="onceWorkoutInput" class="task-input" placeholder="e.g. Evening run, Yoga..." ' +
           'onkeydown="if(event.key===\'Enter\')addOnceWorkout(\'' + sKey + '\')">' +
         onceTagPicker +
+        onceColorPicker +
         '<div class="once-form-row">' +
           '<button class="once-confirm-btn" onclick="addOnceWorkout(\'' + sKey + '\')">Add</button>' +
           '<button class="once-cancel-btn" onclick="toggleOnceForm()">Cancel</button>' +
@@ -2000,7 +2014,7 @@ function render() {
       var dayWs = state.workouts.filter(function(ws) { return isWorkoutScheduledForDay(ws, state.year, state.month, d); });
       if (dayWs.length > 0) {
         var wDone = state.workoutDone[key] || [];
-        for (var wi = 0; wi < dayWs.length && wi < 4; wi++) {
+        for (var wi = 0; wi < dayWs.length; wi++) {
           var ws = dayWs[wi];
           var wIsDone = wDone.indexOf(ws.id) !== -1;
           var dc = ws.color ? ws.color : (wIsDone ? 'var(--teal)' : 'var(--purple)');
