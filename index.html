@@ -1823,6 +1823,10 @@ function addProgram() {
 }
 function deleteProgram(id) {
   if (state.programs.length <= 1) return;
+  var prog = null;
+  for (var i = 0; i < state.programs.length; i++) { if (state.programs[i].id === id) { prog = state.programs[i]; break; } }
+  if (!prog) return;
+  if (!confirm('Delete program "' + prog.name + '"? This will remove all its workouts permanently.')) return;
   state.programs = state.programs.filter(function(p) { return p.id !== id; });
   if (state.activeProgramId === id) {
     state.activeProgramId = state.programs[0].id;
