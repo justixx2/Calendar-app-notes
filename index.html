@@ -44,6 +44,18 @@
     --header-gradient: linear-gradient(130deg, #152850 0%, #1E4080 52%, #3A6BC4 100%);
   }
 
+  body.peptide-mode {
+    --bg: #EAFBF4;
+    --surface: #FFFFFF;
+    --border: #BFEBD9;
+    --text: #103B2C;
+    --text-dim: #4E8C74;
+    --blue: #12A87A;
+    --purple: #0E8C6A;
+    --pink: #16B98A;
+    --header-gradient: linear-gradient(130deg, #0B5F46 0%, #128A66 52%, #16B98A 100%);
+  }
+
   html, body {
     height: 100%;
     background: var(--bg);
@@ -619,7 +631,8 @@
   }
 
   /* ── SPORT MODE ─────────────────────────────────── */
-  .sport-bar { display: flex; gap: 6px; margin-bottom: 10px; }
+  .sport-bar { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .sport-bar .sport-btn { min-width: 120px; }
 
   .sport-btn {
     flex: 1;
@@ -681,6 +694,95 @@
   }
   .backup-btn:hover { border-color: var(--purple); }
   .backup-btn.active { background: var(--purple); border-color: transparent; color: #fff; }
+
+  /* ── PEPTIDES ─────────────────────────────────────── */
+  .pep-settings-panel {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 20px rgba(18,168,122,0.1);
+  }
+  .pep-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+  .pep-row {
+    background: var(--bg);
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    border-left: 4px solid var(--blue);
+    padding: 9px 11px;
+  }
+  .pep-row-head { display: flex; align-items: center; gap: 8px; }
+  .pep-row-name { flex: 1; font-size: 14px; font-weight: 900; color: var(--text); min-width: 0; }
+  .pep-compounds-line { font-size: 11px; font-weight: 700; color: var(--text-dim); margin-top: 2px; }
+  .pep-expand-btn {
+    background: none; border: 1.5px solid var(--border); border-radius: 20px;
+    font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800;
+    color: var(--text-dim); cursor: pointer; padding: 2px 9px; flex-shrink: 0;
+    transition: border-color 0.13s, color 0.13s;
+  }
+  .pep-expand-btn:hover { border-color: var(--purple); color: var(--purple); }
+  .pep-del { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; flex-shrink: 0; opacity: 0.6; }
+  .pep-del:hover { opacity: 1; color: var(--coral); }
+  .pep-detail { margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--border); }
+  .pep-detail-row { display: flex; gap: 6px; font-size: 12px; font-weight: 700; padding: 3px 0; color: var(--text); }
+  .pep-detail-label { color: var(--text-dim); font-weight: 800; min-width: 92px; flex-shrink: 0; }
+  .pep-detail-row a { color: var(--blue); text-decoration: none; word-break: break-all; }
+  .pep-detail-row a:hover { text-decoration: underline; }
+  .pep-conc-box {
+    margin-top: 8px; background: rgba(18,168,122,0.08); border: 1.5px dashed var(--border);
+    border-radius: 10px; padding: 8px 10px; font-size: 12px; font-weight: 800; color: var(--text);
+  }
+  .pep-conc-box b { color: var(--blue); }
+  .pep-cycle-badge {
+    display: inline-block; font-size: 11px; font-weight: 900; border-radius: 20px;
+    padding: 2px 9px; white-space: nowrap;
+  }
+  .pep-cycle-badge.on { background: var(--teal); color: #fff; }
+  .pep-cycle-badge.break { background: var(--yellow); color: var(--text); }
+  .pep-cycle-badge.upcoming { background: var(--border); color: var(--text-dim); }
+
+  /* add peptide form */
+  .pep-form { background: var(--bg); border-radius: 14px; padding: 12px; border: 2px solid var(--border); }
+  .pep-form-label { font-size: 11px; font-weight: 900; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; }
+  .pep-form-label:first-child { margin-top: 0; }
+  .pep-input { width: 100%; padding: 8px 11px; border-radius: 10px; border: 2px solid var(--border);
+    background: var(--surface); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; outline: none; }
+  .pep-input:focus { border-color: var(--blue); }
+  .pep-input::placeholder { color: var(--text-dim); font-weight: 600; }
+  .pep-compound-row { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; }
+  .pep-compound-row .pep-input.cname { flex: 1; }
+  .pep-compound-row .pep-input.cmg { width: 86px; flex-shrink: 0; }
+  .pep-cmg-suffix { font-size: 12px; font-weight: 800; color: var(--text-dim); }
+  .pep-compound-del { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+  .pep-compound-del:hover { color: var(--coral); }
+  .pep-add-compound { background: none; border: 1.5px dashed var(--border); border-radius: 9px; color: var(--text-dim);
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; padding: 5px 10px; cursor: pointer; width: 100%; margin-top: 2px; }
+  .pep-add-compound:hover { border-color: var(--blue); color: var(--blue); }
+  .pep-grid2 { display: flex; gap: 8px; }
+  .pep-grid2 > div { flex: 1; }
+  .pep-form-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .pep-save-btn { flex: 1; height: 38px; border-radius: 11px; border: none;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--blue) 100%); color: #fff;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900; cursor: pointer; }
+  .pep-save-btn:hover { filter: brightness(1.08); }
+  .pep-cancel-btn { height: 38px; padding: 0 16px; border-radius: 11px; border: 2px solid var(--border);
+    background: var(--surface); color: var(--text-dim); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .pep-add-toggle { width: 100%; padding: 11px; border-radius: 12px; border: 2px dashed var(--border);
+    background: none; color: var(--text-dim); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .pep-add-toggle:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* peptide day panel */
+  .pep-log-item { display: flex; align-items: center; gap: 8px; padding: 8px 9px; background: var(--bg);
+    border-radius: 11px; border: 2px solid transparent; border-left: 4px solid var(--blue); margin-bottom: 5px; }
+  .pep-log-name { flex: 1; font-size: 13px; font-weight: 800; color: var(--text); }
+  .pep-log-dose { font-size: 11px; font-weight: 900; color: var(--blue); background: var(--surface);
+    border: 1.5px solid var(--border); border-radius: 20px; padding: 2px 9px; white-space: nowrap; flex-shrink: 0; }
+  .pep-log-form { display: flex; gap: 6px; margin: 4px 0 10px; }
+  .pep-log-select { flex: 1; padding: 9px 10px; border-radius: 11px; border: 2px solid var(--border);
+    background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; outline: none; min-width: 0; }
+  .pep-log-dose-input { width: 70px; flex-shrink: 0; text-align: center; }
+  .pep-cycle-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 
   /* ── workout color picker ── */
   .workout-color-row { display: flex; gap: 5px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
@@ -1200,7 +1302,14 @@ var state = {
   exerciseDone: {},
   expandedWorkout: null,
   dailyAccessories: [],
-  accessoryDone: {}
+  accessoryDone: {},
+  peptideMode: false,
+  showPeptideSettings: false,
+  peptides: [],
+  peptideLog: {},
+  expandedPeptide: null,
+  showAddPeptide: false,
+  peptideCompoundDraft: []
 };
 
 function loadTasks() {
@@ -1213,6 +1322,21 @@ function loadTasks() {
 function saveTasks() {
   try {
     localStorage.setItem("task-calendar-data", JSON.stringify(state.tasks));
+  } catch(e) {}
+}
+function loadPeptides() {
+  try {
+    var saved = localStorage.getItem("peptide-data");
+    if (saved) {
+      var data = JSON.parse(saved);
+      state.peptides = data.peptides || [];
+      state.peptideLog = data.peptideLog || {};
+    }
+  } catch(e) {}
+}
+function savePeptides() {
+  try {
+    localStorage.setItem("peptide-data", JSON.stringify({ peptides: state.peptides, peptideLog: state.peptideLog }));
   } catch(e) {}
 }
 function loadFocusList() {
@@ -1598,6 +1722,9 @@ function toggleSportMode() {
   state.sportMode = !state.sportMode;
   state.showHistory = false;
   if (state.sportMode) {
+    state.peptideMode = false;
+    document.body.classList.remove('peptide-mode');
+    state.showPeptideSettings = false;
     document.body.classList.add('sport-mode');
     if (state.workouts.length === 0) state.showSportSettings = true;
   } else {
@@ -1605,6 +1732,156 @@ function toggleSportMode() {
     state.showSportSettings = false;
   }
   render();
+}
+
+/* ── peptides ── */
+function togglePeptideMode() {
+  state.peptideMode = !state.peptideMode;
+  state.showHistory = false;
+  if (state.peptideMode) {
+    state.sportMode = false;
+    document.body.classList.remove('sport-mode');
+    state.showSportSettings = false;
+    document.body.classList.add('peptide-mode');
+    if (state.peptides.length === 0) state.showPeptideSettings = true;
+  } else {
+    document.body.classList.remove('peptide-mode');
+    state.showPeptideSettings = false;
+    state.showAddPeptide = false;
+  }
+  render();
+}
+function togglePeptideSettings() {
+  state.showPeptideSettings = !state.showPeptideSettings;
+  render();
+}
+function togglePeptideExpand(id) {
+  state.expandedPeptide = state.expandedPeptide === id ? null : id;
+  render();
+}
+function toggleAddPeptide() {
+  state.showAddPeptide = !state.showAddPeptide;
+  state.peptideCompoundDraft = state.showAddPeptide ? [{ name: '', mg: '' }] : [];
+  render();
+  if (state.showAddPeptide) setTimeout(function() { var el = document.getElementById('pepName'); if (el) el.focus(); }, 30);
+}
+function addCompoundDraftRow() {
+  // persist current input values before re-render
+  syncCompoundDraftFromInputs();
+  state.peptideCompoundDraft.push({ name: '', mg: '' });
+  render();
+}
+function removeCompoundDraftRow(idx) {
+  syncCompoundDraftFromInputs();
+  state.peptideCompoundDraft.splice(idx, 1);
+  if (state.peptideCompoundDraft.length === 0) state.peptideCompoundDraft.push({ name: '', mg: '' });
+  render();
+}
+function syncCompoundDraftFromInputs() {
+  for (var i = 0; i < state.peptideCompoundDraft.length; i++) {
+    var nEl = document.getElementById('pcn_' + i);
+    var mEl = document.getElementById('pcm_' + i);
+    if (nEl) state.peptideCompoundDraft[i].name = nEl.value;
+    if (mEl) state.peptideCompoundDraft[i].mg = mEl.value;
+  }
+}
+function savePeptide() {
+  syncCompoundDraftFromInputs();
+  var name = (document.getElementById('pepName') || {}).value;
+  name = name ? name.trim() : '';
+  if (!name) { alert('Please enter a peptide name.'); return; }
+  var compounds = [];
+  for (var i = 0; i < state.peptideCompoundDraft.length; i++) {
+    var c = state.peptideCompoundDraft[i];
+    var cn = (c.name || '').trim();
+    if (cn) compounds.push({ name: cn, mg: (c.mg || '').toString().trim() });
+  }
+  var gv = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  var colorRadio = document.querySelector('input[name="pepColor"]:checked');
+  var peptide = {
+    id: Date.now(),
+    name: name,
+    compounds: compounds,
+    vendorSite: gv('pepVendor'),
+    bacStore: gv('pepBacStore'),
+    bacQty: gv('pepBacQty'),
+    doseMg: gv('pepDose'),
+    cycleWeeks: gv('pepCycleWeeks'),
+    breakWeeks: gv('pepBreakWeeks'),
+    cycleStart: gv('pepCycleStart'),
+    nextCycle: gv('pepNextCycle'),
+    color: (colorRadio && colorRadio.value) ? colorRadio.value : WORKOUT_COLORS[0]
+  };
+  state.peptides.push(peptide);
+  state.showAddPeptide = false;
+  state.peptideCompoundDraft = [];
+  savePeptides();
+  render();
+}
+function deletePeptide(id) {
+  var p = null;
+  for (var i = 0; i < state.peptides.length; i++) { if (state.peptides[i].id === id) { p = state.peptides[i]; break; } }
+  if (!p) return;
+  if (!confirm('Delete peptide "' + p.name + '"? Logged doses for it will remain in history but show as removed.')) return;
+  state.peptides = state.peptides.filter(function(x) { return x.id !== id; });
+  savePeptides();
+  render();
+}
+function findPeptideById(id) {
+  for (var i = 0; i < state.peptides.length; i++) { if (state.peptides[i].id === id) return state.peptides[i]; }
+  return null;
+}
+function logPeptideDose(dayKey) {
+  var sel = document.getElementById('pepLogSelect');
+  var doseEl = document.getElementById('pepLogDose');
+  if (!sel) return;
+  var pid = parseInt(sel.value);
+  if (!pid) return;
+  var pep = findPeptideById(pid);
+  var dose = doseEl && doseEl.value.trim() ? doseEl.value.trim() : (pep && pep.doseMg ? pep.doseMg : '');
+  if (!state.peptideLog[dayKey]) state.peptideLog[dayKey] = [];
+  state.peptideLog[dayKey].push({ id: Date.now(), peptideId: pid, dose: dose });
+  if (navigator.vibrate) navigator.vibrate(30);
+  savePeptides();
+  render();
+}
+function deletePeptideLog(dayKey, logId) {
+  if (!state.peptideLog[dayKey]) return;
+  state.peptideLog[dayKey] = state.peptideLog[dayKey].filter(function(l) { return l.id !== logId; });
+  if (state.peptideLog[dayKey].length === 0) delete state.peptideLog[dayKey];
+  savePeptides();
+  render();
+}
+// Concentration helper: total mg across compounds / bac ml -> mg per ml, and units on U-100 syringe per dose
+function peptideConcentration(pep) {
+  var totalMg = 0, hasMg = false;
+  for (var i = 0; i < (pep.compounds || []).length; i++) {
+    var m = parseFloat(pep.compounds[i].mg);
+    if (!isNaN(m)) { totalMg += m; hasMg = true; }
+  }
+  var bacMl = parseFloat(pep.bacQty);
+  if (!hasMg || isNaN(bacMl) || bacMl <= 0) return null;
+  var mgPerMl = totalMg / bacMl;
+  var dose = parseFloat(pep.doseMg);
+  var units = (!isNaN(dose) && mgPerMl > 0) ? Math.round((dose / mgPerMl) * 100 * 10) / 10 : null;
+  return { totalMg: totalMg, bacMl: bacMl, mgPerMl: Math.round(mgPerMl * 100) / 100, units: units };
+}
+// Cycle status for a given date: returns {phase:'on'|'break'|'none', dayNum, totalDays}
+function peptideCycleStatus(pep, year, month, day) {
+  if (!pep.cycleStart) return null;
+  var cw = parseInt(pep.cycleWeeks), bw = parseInt(pep.breakWeeks);
+  if (isNaN(cw) || cw <= 0) return null;
+  if (isNaN(bw)) bw = 0;
+  var sp = pep.cycleStart.split('-');
+  var start = new Date(parseInt(sp[0]), parseInt(sp[1]) - 1, parseInt(sp[2]));
+  var target = new Date(year, month, day);
+  var diff = Math.floor((target - start) / 86400000);
+  if (diff < 0) return { phase: 'upcoming' };
+  var onDays = cw * 7, breakDays = bw * 7, period = onDays + breakDays;
+  if (period <= 0) return null;
+  var inPeriod = diff % period;
+  if (inPeriod < onDays) return { phase: 'on', dayNum: inPeriod + 1, totalDays: onDays };
+  return { phase: 'break', dayNum: (inPeriod - onDays) + 1, totalDays: breakDays };
 }
 function toggleSportSettings() {
   state.showSportSettings = !state.showSportSettings;
@@ -2181,6 +2458,163 @@ function renderSportSettingsPanel() {
   return html;
 }
 
+function renderPeptideSettingsPanel() {
+  var html = '<div class="pep-settings-panel">';
+  // existing peptides
+  if (state.peptides.length > 0) {
+    html += '<div class="pep-list">';
+    for (var i = 0; i < state.peptides.length; i++) {
+      var p = state.peptides[i];
+      var compLine = (p.compounds || []).map(function(c) { return escHtml(c.name) + (c.mg ? ' ' + escHtml(String(c.mg)) + 'mg' : ''); }).join(' + ') || 'No compounds';
+      var expanded = state.expandedPeptide === p.id;
+      html += '<div class="pep-row" style="border-left-color:' + (p.color || 'var(--blue)') + '">' +
+        '<div class="pep-row-head">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div class="pep-row-name">' + escHtml(p.name) + '</div>' +
+            '<div class="pep-compounds-line">' + compLine + '</div>' +
+          '</div>' +
+          '<button class="pep-expand-btn" onclick="togglePeptideExpand(' + p.id + ')">' + (expanded ? 'Hide ▴' : 'Details ▾') + '</button>' +
+          '<button class="pep-del" onclick="deletePeptide(' + p.id + ')">&#215;</button>' +
+        '</div>';
+      if (expanded) {
+        var conc = peptideConcentration(p);
+        html += '<div class="pep-detail">';
+        if (p.doseMg) html += '<div class="pep-detail-row"><span class="pep-detail-label">Dose</span><span>' + escHtml(p.doseMg) + ' mg</span></div>';
+        if (p.bacQty) html += '<div class="pep-detail-row"><span class="pep-detail-label">BAC water</span><span>' + escHtml(p.bacQty) + (p.bacStore ? ' · ' + escHtml(p.bacStore) : '') + '</span></div>';
+        if (p.vendorSite) html += '<div class="pep-detail-row"><span class="pep-detail-label">Source</span><a href="' + escAttr(/^https?:\/\//i.test(p.vendorSite) ? p.vendorSite : 'https://' + p.vendorSite) + '" target="_blank" rel="noopener">' + escHtml(p.vendorSite) + '</a></div>';
+        if (p.cycleWeeks) html += '<div class="pep-detail-row"><span class="pep-detail-label">Cycle</span><span>' + escHtml(p.cycleWeeks) + ' wk on' + (p.breakWeeks ? ' / ' + escHtml(p.breakWeeks) + ' wk break' : '') + (p.cycleStart ? ' · from ' + escHtml(p.cycleStart) : '') + '</span></div>';
+        if (p.nextCycle) html += '<div class="pep-detail-row"><span class="pep-detail-label">Next cycle</span><span>' + escHtml(p.nextCycle) + '</span></div>';
+        if (conc) {
+          html += '<div class="pep-conc-box">💉 Concentration: <b>' + conc.mgPerMl + ' mg/ml</b>' +
+            (conc.units != null ? ' · Draw <b>' + conc.units + ' units</b> (U-100) per ' + escHtml(p.doseMg) + 'mg dose' : '') + '</div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="workout-empty" style="margin-bottom:10px">No peptides yet — add one below.</div>';
+  }
+  // add form
+  if (state.showAddPeptide) {
+    var compRows = '';
+    for (var ci = 0; ci < state.peptideCompoundDraft.length; ci++) {
+      var cd = state.peptideCompoundDraft[ci];
+      compRows += '<div class="pep-compound-row">' +
+        '<input id="pcn_' + ci + '" class="pep-input cname" placeholder="Compound (e.g. GHK-Cu)" value="' + escAttr(cd.name || '') + '">' +
+        '<input id="pcm_' + ci + '" class="pep-input cmg" type="text" inputmode="decimal" placeholder="mg" value="' + escAttr(String(cd.mg || '')) + '">' +
+        '<span class="pep-cmg-suffix">mg</span>' +
+        '<button class="pep-compound-del" onclick="removeCompoundDraftRow(' + ci + ')" title="Remove">&#215;</button>' +
+      '</div>';
+    }
+    var colorPicker = '<div class="wc-pick-row">' +
+      WORKOUT_COLORS.map(function(c, idx) {
+        return '<input type="radio" name="pepColor" id="pepcol_' + idx + '" class="wc-radio" value="' + c + '"' + (idx === 0 ? ' checked' : '') + '>' +
+               '<label for="pepcol_' + idx + '" class="wc-pick-opt" style="background:' + c + '"></label>';
+      }).join('') + '</div>';
+    html += '<div class="pep-form">' +
+      '<div class="pep-form-label">Peptide name</div>' +
+      '<input id="pepName" class="pep-input" placeholder="e.g. GHK-Cu or KLOW">' +
+      '<div class="pep-form-label">Compounds &amp; mg</div>' +
+      compRows +
+      '<button class="pep-add-compound" onclick="addCompoundDraftRow()">+ Add compound</button>' +
+      '<div class="pep-form-label">Default dose</div>' +
+      '<input id="pepDose" class="pep-input" placeholder="e.g. 0.25 (mg per dose)">' +
+      '<div class="pep-grid2">' +
+        '<div><div class="pep-form-label">BAC water qty</div><input id="pepBacQty" class="pep-input" placeholder="e.g. 2 ml"></div>' +
+        '<div><div class="pep-form-label">BAC store</div><input id="pepBacStore" class="pep-input" placeholder="e.g. Amazon"></div>' +
+      '</div>' +
+      '<div class="pep-form-label">Source website</div>' +
+      '<input id="pepVendor" class="pep-input" placeholder="e.g. peptidesciences.com">' +
+      '<div class="pep-grid2">' +
+        '<div><div class="pep-form-label">Cycle (weeks on)</div><input id="pepCycleWeeks" class="pep-input" type="text" inputmode="numeric" placeholder="e.g. 8"></div>' +
+        '<div><div class="pep-form-label">Break (weeks)</div><input id="pepBreakWeeks" class="pep-input" type="text" inputmode="numeric" placeholder="e.g. 4"></div>' +
+      '</div>' +
+      '<div class="pep-form-label">Cycle start date</div>' +
+      '<input id="pepCycleStart" class="pep-input" type="date">' +
+      '<div class="pep-form-label">Next cycle plan</div>' +
+      '<input id="pepNextCycle" class="pep-input" placeholder="e.g. BPC-157 in June, 0.5mg/day">' +
+      '<div class="pep-form-label">Color</div>' +
+      colorPicker +
+      '<div class="pep-form-actions">' +
+        '<button class="pep-save-btn" onclick="savePeptide()">Save Peptide</button>' +
+        '<button class="pep-cancel-btn" onclick="toggleAddPeptide()">Cancel</button>' +
+      '</div>' +
+    '</div>';
+  } else {
+    html += '<button class="pep-add-toggle" onclick="toggleAddPeptide()">+ Add Peptide</button>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderPeptideDayPanel() {
+  if (!state.selectedDate) {
+    return '<div class="placeholder-panel"><div class="icon">💊</div><p>Pick a day to log peptides</p><div class="sub">Tap any date on the calendar</div></div>';
+  }
+  var dow = new Date(state.year, state.month, state.selectedDate).getDay();
+  var sKey = dateKey(state.year, state.month, state.selectedDate);
+  var todayLbl = isToday(state.selectedDate) ? ' · Today' : '';
+  var logs = state.peptideLog[sKey] || [];
+
+  // cycle status strip (for peptides that have a cycle defined)
+  var cycleStrip = '';
+  for (var i = 0; i < state.peptides.length; i++) {
+    var p = state.peptides[i];
+    var st = peptideCycleStatus(p, state.year, state.month, state.selectedDate);
+    if (st && (st.phase === 'on' || st.phase === 'break')) {
+      var lbl = st.phase === 'on' ? ('💊 Day ' + st.dayNum + '/' + st.totalDays + ' on') : ('⏸ Break ' + st.dayNum + '/' + st.totalDays);
+      cycleStrip += '<span class="pep-cycle-badge ' + st.phase + '" style="' + (st.phase === 'on' ? 'background:' + (p.color || 'var(--teal)') + ';color:#fff' : '') + '">' + escHtml(p.name) + ': ' + lbl + '</span>';
+    }
+  }
+  if (cycleStrip) cycleStrip = '<div class="pep-cycle-strip">' + cycleStrip + '</div>';
+
+  // logged doses
+  var items = '';
+  if (logs.length === 0) {
+    items = '<div class="empty-state"><div class="icon">💉</div>No doses logged this day.</div>';
+  } else {
+    for (var j = 0; j < logs.length; j++) {
+      var lg = logs[j];
+      var pep = findPeptideById(lg.peptideId);
+      var pname = pep ? pep.name : '(removed peptide)';
+      var pcolor = pep && pep.color ? pep.color : 'var(--blue)';
+      items += '<div class="pep-log-item" style="border-left-color:' + pcolor + '">' +
+        '<span class="pep-log-name">' + escHtml(pname) + '</span>' +
+        (lg.dose ? '<span class="pep-log-dose">' + escHtml(String(lg.dose)) + ' mg</span>' : '') +
+        '<button class="pep-del" onclick="deletePeptideLog(\'' + sKey + '\',' + lg.id + ')">&#215;</button>' +
+      '</div>';
+    }
+  }
+
+  // log form (only if peptides exist)
+  var logForm = '';
+  if (state.peptides.length > 0) {
+    var opts = state.peptides.map(function(p) { return '<option value="' + p.id + '">' + escHtml(p.name) + (p.doseMg ? ' (' + escHtml(p.doseMg) + 'mg)' : '') + '</option>'; }).join('');
+    logForm = '<div class="pep-log-form">' +
+      '<select id="pepLogSelect" class="pep-log-select">' + opts + '</select>' +
+      '<input id="pepLogDose" class="pep-input pep-log-dose-input" placeholder="mg">' +
+      '<button class="add-btn" onclick="logPeptideDose(\'' + sKey + '\')" style="width:38px;height:38px">+</button>' +
+    '</div>';
+  } else {
+    logForm = '<div class="empty-state" style="padding:8px 0">Add peptides in ⚙️ settings first.</div>';
+  }
+
+  return '<div class="task-panel">' +
+    '<div class="task-panel-head">' +
+      '<div class="task-panel-head-left">' +
+        '<h2>' + MONTHS[state.month] + ' ' + state.selectedDate + todayLbl + '</h2>' +
+        '<div class="task-date-sub">' + DAYS_FULL[dow] + ' · 💊</div>' +
+      '</div>' +
+      '<span class="task-count-badge ' + (logs.length > 0 ? 'all-done' : 'zero') + '">' + logs.length + ' dose' + (logs.length === 1 ? '' : 's') + '</span>' +
+    '</div>' +
+    cycleStrip +
+    logForm +
+    items +
+  '</div>';
+}
+
 function deleteTask(key, id) {
   if (!state.tasks[key]) return;
   state.tasks[key] = state.tasks[key].filter(function(x) { return x.id !== id; });
@@ -2304,7 +2738,9 @@ function exportBackup() {
     exerciseDone: state.exerciseDone,
     dailyAccessories: state.dailyAccessories,
     accessoryDone: state.accessoryDone,
-    exerciseTags: state.exerciseTags
+    exerciseTags: state.exerciseTags,
+    peptides: state.peptides,
+    peptideLog: state.peptideLog
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   var url = URL.createObjectURL(blob);
@@ -2348,10 +2784,13 @@ function importBackupFile() {
         for (var ii = 0; ii < state.programs.length; ii++) {
           if (state.programs[ii].id === state.activeProgramId) { state.workouts = state.programs[ii].workouts; break; }
         }
+        state.peptides = data.peptides || [];
+        state.peptideLog = data.peptideLog || {};
         saveTasks();
         saveFocusList();
         saveWorkouts();
         saveExerciseTags();
+        savePeptides();
         state.showBackup = false;
         render();
         alert('Backup restored successfully!');
@@ -2373,7 +2812,8 @@ function renderBackupPanel() {
     '<h3>💾 Backup & Restore</h3>' +
     '<div class="backup-info" style="margin-bottom:10px;text-align:left;">' +
       '📋 Tasks: ' + taskCount + ' total (' + doneCount + ' done) &nbsp;|&nbsp; ' +
-      '🏋️ Workouts: ' + state.workouts.length + ' saved, ' + workoutDoneCount + ' sessions logged' +
+      '🏋️ Workouts: ' + state.workouts.length + ' saved, ' + workoutDoneCount + ' sessions logged &nbsp;|&nbsp; ' +
+      '💊 Peptides: ' + state.peptides.length + ' saved' +
     '</div>' +
     '<div class="backup-row">' +
       '<button class="backup-action-btn primary" onclick="exportBackup()">⬇️ Export Backup</button>' +
@@ -2399,7 +2839,17 @@ function render() {
     var key = dateKey(state.year, state.month, d);
     var dotsHtml = "";
 
-    if (state.sportMode) {
+    if (state.peptideMode) {
+      var dayLogs = state.peptideLog[key] || [];
+      var seenPep = {};
+      for (var pli = 0; pli < dayLogs.length; pli++) {
+        var lpid = dayLogs[pli].peptideId;
+        if (seenPep[lpid]) continue;
+        seenPep[lpid] = true;
+        var lpep = findPeptideById(lpid);
+        dotsHtml += '<div class="dot" style="background:' + (lpep && lpep.color ? lpep.color : 'var(--blue)') + '"></div>';
+      }
+    } else if (state.sportMode) {
       var dayWs = state.workouts.filter(function(ws) { return isWorkoutScheduledForDay(ws, state.year, state.month, d); });
       if (dayWs.length > 0) {
         var wDone = state.workoutDone[key] || [];
@@ -2435,7 +2885,9 @@ function render() {
 
   /* ── task panel ── */
   var taskPanel = "";
-  if (state.sportMode) {
+  if (state.peptideMode) {
+    taskPanel = renderPeptideDayPanel();
+  } else if (state.sportMode) {
     taskPanel = renderSportDayPanel();
   } else if (state.selectedDate) {
     var dayName = DAYS_FULL[new Date(state.year, state.month, state.selectedDate).getDay()];
@@ -2567,12 +3019,12 @@ function render() {
       '</div>' +
       '<button class="nav-btn" onclick="nextMonth()">&#9654;</button>' +
     '</div>' +
-    (!state.sportMode ? pendingBar : '') +
-    (!state.sportMode && state.showPending ? renderPendingPanel() : '') +
+    (!state.sportMode && !state.peptideMode ? pendingBar : '') +
+    (!state.sportMode && !state.peptideMode && state.showPending ? renderPendingPanel() : '') +
     '<div class="sport-bar">' +
-      '<button class="sport-btn' + (state.sportMode ? ' active' : '') + '" onclick="toggleSportMode()">🏋️ <span class="sport-btn-label">Sport Mode</span>' +
+      '<button class="sport-btn' + (state.sportMode ? ' active' : '') + '" onclick="toggleSportMode()">🏋️ <span class="sport-btn-label">Sport</span>' +
         (function() {
-          if (state.sportMode) return '';
+          if (state.sportMode || state.peptideMode) return '';
           var n = new Date();
           var todayKey = dateKey(n.getFullYear(), n.getMonth(), n.getDate());
           var result = '';
@@ -2592,11 +3044,23 @@ function render() {
           return result;
         })() +
       '</button>' +
+      '<button class="sport-btn' + (state.peptideMode ? ' active' : '') + '" onclick="togglePeptideMode()">💊 <span class="sport-btn-label">Peptides</span>' +
+        (function() {
+          if (state.sportMode || state.peptideMode) return '';
+          var n = new Date();
+          var todayKey = dateKey(n.getFullYear(), n.getMonth(), n.getDate());
+          var cnt = (state.peptideLog[todayKey] || []).length;
+          if (cnt === 0) return '';
+          return '<span class="task-count-badge all-done">' + cnt + '</span>';
+        })() +
+      '</button>' +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showSportSettings ? ' active' : '') + '" onclick="toggleSportSettings()">⚙️</button>' : '') +
       (state.sportMode ? '<button class="sport-settings-btn' + (state.showHistory ? ' active' : '') + '" onclick="toggleHistory()" title="History">📜</button>' : '') +
+      (state.peptideMode ? '<button class="sport-settings-btn' + (state.showPeptideSettings ? ' active' : '') + '" onclick="togglePeptideSettings()">⚙️</button>' : '') +
       '<button class="backup-btn' + (state.showBackup ? ' active' : '') + '" onclick="toggleBackupPanel()" title="Backup & Restore">💾</button>' +
     '</div>' +
     (state.sportMode && state.showSportSettings ? renderSportSettingsPanel() : '') +
+    (state.peptideMode && state.showPeptideSettings ? renderPeptideSettingsPanel() : '') +
     (state.showBackup ? renderBackupPanel() : '') +
     (state.showHistory ? renderHistoryPanel() : '') +
     '<div class="layout">' +
@@ -2604,7 +3068,7 @@ function render() {
         '<div class="day-labels">' + dayLabels + '</div>' +
         '<div class="cal-grid">' + calCells + '</div>' +
       '</div>' +
-      '<div class="task-side">' + (!state.sportMode && state.showFocus ? renderFocusPanel() : taskPanel) + '</div>' +
+      '<div class="task-side">' + (!state.sportMode && !state.peptideMode && state.showFocus ? renderFocusPanel() : taskPanel) + '</div>' +
     '</div>';
 }
 
@@ -2613,6 +3077,7 @@ loadTasks();
 loadWorkouts();
 loadExerciseTags();
 loadFocusList();
+loadPeptides();
 (function() {
   var t = new Date();
   state.year = t.getFullYear();
